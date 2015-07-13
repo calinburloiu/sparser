@@ -1,0 +1,90 @@
+<!-- If you wish to turn off checking for a section of code, you can put a comment in the source
+ before and after the section, with the following syntax: -->
+<!-- // scalastyle:off -->
+<!-- ... -->
+<!-- // naughty stuff -->
+<!-- ... -->
+<!-- // scalastyle:on -->
+
+<scalastyle>
+    <name>Scalastyle Avira configuration</name>
+    <check level="error" class="org.scalastyle.file.FileTabChecker" enabled="true"></check>
+    <check level="error" class="org.scalastyle.scalariform.SpacesBeforePlusChecker"
+           enabled="true"/>
+    <check level="error" class="org.scalastyle.scalariform.SpacesAfterPlusChecker"
+           enabled="true"/>
+    <check level="warning" class="org.scalastyle.file.WhitespaceEndOfLineChecker" enabled="true"/>
+    <check level="error" class="org.scalastyle.file.FileLineLengthChecker" enabled="true">
+        <parameters>
+            <parameter name="maxLineLength"><![CDATA[100]]></parameter>
+            <parameter name="tabSize"><![CDATA[2]]></parameter>
+            <parameter name="ignoreImports">true</parameter>
+        </parameters>
+    </check>
+    <!-- Does not work with continuations of 4 chars -->
+    <check level="warning" class="org.scalastyle.file.IndentationChecker" enabled="false">
+        <parameters>
+            <parameter name="tabSize">2</parameter>
+        </parameters>
+    </check>
+    <check level="error" class="org.scalastyle.scalariform.ClassNamesChecker" enabled="true">
+        <parameters>
+            <parameter name="regex"><![CDATA[^[A-Z][A-Za-z]*$]]></parameter>
+        </parameters>
+    </check>
+    <check level="error" class="org.scalastyle.scalariform.PackageObjectNamesChecker"
+           enabled="true">
+        <parameters>
+            <parameter name="regex"><![CDATA[^[a-z][A-Za-z]*$]]></parameter>
+        </parameters>
+    </check>
+    <check level="error" class="org.scalastyle.scalariform.ObjectNamesChecker" enabled="true">
+        <parameters>
+            <parameter name="regex"><![CDATA[^[A-Za-z][A-Za-z0-9]*$]]></parameter>
+        </parameters>
+    </check>
+    <check level="error" class="org.scalastyle.scalariform.UppercaseLChecker" enabled="true"/>
+    <check level="error" class="org.scalastyle.scalariform.SimplifyBooleanExpressionChecker"
+           enabled="true"/>
+    <check level="error" class="org.scalastyle.scalariform.IfBraceChecker" enabled="true">
+        <parameters>
+            <parameter name="singleLineAllowed"><![CDATA[true]]></parameter>
+            <parameter name="doubleLineAllowed"><![CDATA[false]]></parameter>
+        </parameters>
+    </check>
+    <check level="warning" class="org.scalastyle.scalariform.MethodLengthChecker"
+           enabled="true">
+        <parameters>
+            <parameter name="maxLength"><![CDATA[50]]></parameter>
+        </parameters>
+    </check>
+    <check level="error" class="org.scalastyle.scalariform.MethodLengthChecker"
+           enabled="true">
+        <parameters>
+            <parameter name="maxLength"><![CDATA[75]]></parameter>
+        </parameters>
+    </check>
+    <check level="error" class="org.scalastyle.scalariform.MethodNamesChecker"
+           enabled="true">
+        <parameters>
+            <!-- complicated regex which allows us to have methods with names like '\' or '~>' -->
+            <parameter name="regex"><![CDATA[^([!@#$%^*\-+\\\/~>:]{1,3}|[a-z][A-Za-z0-9]*)$]]></parameter>
+        </parameters>
+    </check>
+    <check level="error" class="org.scalastyle.scalariform.NumberOfMethodsInTypeChecker"
+           enabled="true">
+        <parameters>
+            <parameter name="maxMethods"><![CDATA[30]]></parameter>
+        </parameters>
+    </check>
+    <check level="error" class="org.scalastyle.scalariform.PublicMethodsHaveTypeChecker"
+           enabled="true"/>
+    <check level="error" class="org.scalastyle.file.NewLineAtEofChecker" enabled="true"/>
+    <check level="error" class="org.scalastyle.scalariform.NonASCIICharacterChecker"
+           enabled="true"/>
+    <check level="error" class="org.scalastyle.scalariform.SpaceAfterCommentStartChecker"
+           enabled="true"/>
+    <check level="warning" class="org.scalastyle.scalariform.WhileChecker" enabled="true"/>
+    <check level="warning" class="org.scalastyle.scalariform.VarLocalChecker" enabled="true"/>
+    <check level="error" class="org.scalastyle.scalariform.ReturnChecker" enabled="true"/>
+</scalastyle>
