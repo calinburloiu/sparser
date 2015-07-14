@@ -36,12 +36,6 @@ trait Parser[A] {
   def createResult[B](input: B): ParserResult[B] = ParserResult(input, errorCallback)
 }
 
-sealed trait PipeResult[+R]
-//case object PipeSkip extends PipeResult[Nothing]
-case class PipeFailure(error: ParserError) extends PipeResult[Nothing]
-case class PipeWarning[R](value: R, warning: ParserError) extends PipeResult[R]
-case class PipeSuccess[R](value: R) extends PipeResult[R]
-
 /**
  * Instances of this class are produced by [[Parser]] classes and store an optional value and
  * a list of parsing errors. A callback function (with side effects) can be called each time an
@@ -62,19 +56,16 @@ case class ParserResult[+A](
     errors: Seq[ParserError],
     errorCallback: (ParserError => Unit) = { e: ParserError => () }) {
 
-  def pipe2[B](f: A => PipeResult[B]): ParserResult[B] = value.fold[ParserResult[B]](
+  import com.avira.ds.parsing.ParserResult.{PipeSuccess, PipeWarning, PipeFailure, PipeResult}
+
+  def pipe[B](f: A => PipeResult[B]): ParserResult[B] = value.fold[ParserResult[B]](
     copy(value = None)
   ) { v =>
     f(v) match {
-      case PipeFailure(error) => copy(value = None).reportError(Some(error))
-      case PipeWarning(newValue, warning) => fillValue(Some(newValue)).reportError(Some(warning))
-      case PipeSuccess(newValue) => fillValue(Some(newValue))
+      case PipeFailure(error) => copy(value = None).reportError(error)
+      case PipeWarning(newValue, warning) => fillValue(newValue).reportError(warning)
+      case PipeSuccess(newValue) => fillValue(newValue)
     }
-  }
-
-  def pipe[B](f: (Option[A] => (Option[B], Option[ParserError]))): ParserResult[B] = {
-    val (newValue, error) = f(value)
-    fillValue(newValue).reportError(error)
   }
 
   /**
@@ -83,20 +74,26 @@ case class ParserResult[+A](
    * @tparam B new type of the value
    * @return a new ParserResult
    */
-  def fillValue[B](newValue: Option[B]): ParserResult[B] = this.copy(value = newValue)
+  def fillValue[B](newValue: B): ParserResult[B] = this.copy(value = Some(newValue))
 
   /**
    * Add an error to the error list.
    * @param error to be added
    * @return a new ParserResult
    */
-  def reportError(error: Option[ParserError]): ParserResult[A] = error.fold(this) { e =>
-    errorCallback(e)
-    this.copy(errors = errors :+ e)
+  def reportError(error: ParserError): ParserResult[A] = {
+    errorCallback(error)
+    this.copy(errors = errors :+ error)
   }
 }
 
 object ParserResult {
+
+  sealed trait PipeResult[+R]
+  case class PipeFailure(error: ParserError) extends PipeResult[Nothing]
+  case class PipeWarning[R](value: R, warning: ParserError) extends PipeResult[R]
+  case class PipeSuccess[R](value: R) extends PipeResult[R]
+
   def apply[T](value: T): ParserResult[T] = ParserResult(Some(value), Seq())
 
   def apply[T](value: T, errorCallback: (ParserError => Unit)): ParserResult[T] =
