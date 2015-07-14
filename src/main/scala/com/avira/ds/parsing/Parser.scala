@@ -36,6 +36,12 @@ trait Parser[A] {
   def createResult[B](input: B): ParserResult[B] = ParserResult(input, errorCallback)
 }
 
+sealed trait PipeResult[+R]
+//case object PipeSkip extends PipeResult[Nothing]
+case class PipeFailure(error: ParserError) extends PipeResult[Nothing]
+case class PipeWarning[R](value: R, warning: ParserError) extends PipeResult[R]
+case class PipeSuccess[R](value: R) extends PipeResult[R]
+
 /**
  * Instances of this class are produced by [[Parser]] classes and store an optional value and
  * a list of parsing errors. A callback function (with side effects) can be called each time an
@@ -56,18 +62,17 @@ case class ParserResult[+A](
     errors: Seq[ParserError],
     errorCallback: (ParserError => Unit) = { e: ParserError => () }) {
 
-  def pipe[B >: A](f: (Option[A] => (Option[B], Option[ParserError]))): ParserResult[B] = {
-    val (valueOpt, errOpt) = f(value)
+//  def pipe2[B](f: A => PipeResult[B]): ParserResult[B] = value.fold[ParserResult[B]](this) { v =>
+//    f(v) match {
+//      case PipeFailure(error) => reportError(Some(error))
+//      case PipeWarning(newValue, warning) => fillValue(Some(newValue)).reportError(Some(warning))
+//      case PipeSuccess(newValue) => fillValue(Some(newValue))
+//    }
+//  }
 
-    val r = this.fillValue(valueOpt).reportError(errOpt)
-    r
-  }
-
-  def pipe2[B >: A](f: (A => (Option[B], Option[ParserError]))): ParserResult[B] = value.fold(this) { v =>
-    val (valueOpt, errOpt) = f(v)
-
-    val r = this.fillValue(valueOpt).reportError(errOpt)
-    r
+  def pipe[B](f: (Option[A] => (Option[B], Option[ParserError]))): ParserResult[B] = {
+    val (newValue, error) = f(value)
+    fillValue(newValue).reportError(error)
   }
 
   /**
