@@ -2,33 +2,45 @@ package com.avira.ds.parsing
 
 import org.scalatest.WordSpec
 
+import scala.collection.mutable
+
 class ParserSpec extends WordSpec {
 
-  "A ParserError" when {
-    "empty" should {
-      "have 0 messages" in {
-        assert(ParserError().messages.isEmpty)
+  "A ParserResult" when {
+    "it has no errors" should {
+      val emptyResult = ParserResult("some value")
+
+      "have 0 errors" in {
+        assert(emptyResult.errors.isEmpty)
       }
 
-      "have 1 message when appended" in {
-        assert((ParserError() :+ "right").messages.size == 1)
-      }
-
-      "have 1 message when prepended" in {
-        assert(("left" +: ParserError()).messages.size == 1)
+      "have 1 error when an error is reported" in {
+        val newResult = emptyResult.reportError(ParserError("some error", None))
+        assert(newResult.errors.size == 1)
       }
     }
 
-    "non-empty" should {
-      val line = Some("line")
-      val init = ParserError(Seq("message"), line)
+    "it has an error" should {
+      val result = ParserResult("some value", ParserError("some error", None))
+      val newResult = result.reportError(ParserError("some other error", None))
 
-      "have an element at the right when appended" in {
-        assert(init :+ "right" == ParserError(Seq("message", "right"), line))
+      "have 2 errors when a new error is reported" in {
+        assert(newResult.errors.size == 2)
+        assert(newResult.errors.map(_.name) == Seq("some error", "some other error"))
       }
+    }
 
-      "have an element at the left when prepended" in {
-        assert("left" +: init == ParserError(Seq("left", "message"), line))
+    "it has an error callback which adds the error to a list" should {
+      val errorList = new mutable.ArrayBuffer[ParserError]
+      val callback: (ParserError => Unit) = { error: ParserError =>
+        errorList += error
+      }
+      val result = ParserResult[Nothing](callback)
+
+      "have 1 error in the list when an error is reported" in {
+        result.reportError(ParserError("some error", None))
+        println(errorList)
+        assert(errorList.size == 1)
       }
     }
   }
