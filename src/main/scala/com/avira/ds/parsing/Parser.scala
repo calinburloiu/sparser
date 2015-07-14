@@ -62,13 +62,15 @@ case class ParserResult[+A](
     errors: Seq[ParserError],
     errorCallback: (ParserError => Unit) = { e: ParserError => () }) {
 
-//  def pipe2[B](f: A => PipeResult[B]): ParserResult[B] = value.fold[ParserResult[B]](this) { v =>
-//    f(v) match {
-//      case PipeFailure(error) => reportError(Some(error))
-//      case PipeWarning(newValue, warning) => fillValue(Some(newValue)).reportError(Some(warning))
-//      case PipeSuccess(newValue) => fillValue(Some(newValue))
-//    }
-//  }
+  def pipe2[B](f: A => PipeResult[B]): ParserResult[B] = value.fold[ParserResult[B]](
+    copy(value = None)
+  ) { v =>
+    f(v) match {
+      case PipeFailure(error) => copy(value = None).reportError(Some(error))
+      case PipeWarning(newValue, warning) => fillValue(Some(newValue)).reportError(Some(warning))
+      case PipeSuccess(newValue) => fillValue(Some(newValue))
+    }
+  }
 
   def pipe[B](f: (Option[A] => (Option[B], Option[ParserError]))): ParserResult[B] = {
     val (newValue, error) = f(value)
