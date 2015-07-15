@@ -8,9 +8,9 @@ package com.avira.ds.parsing
  * errors to be collected and a callback function (with side effects) to be called each time an
  * error occurs. Check [[ParserResult]] documentation for more information.
  *
- * @tparam A structured object type
+ * @tparam O structured object type
  */
-trait Parser[A] {
+trait Parser[I, O] {
   /**
    * Function to be called each time an error occurs. Default to do nothing.
    */
@@ -21,7 +21,7 @@ trait Parser[A] {
    * @param input string to transform
    * @return structured object
    */
-  def parse(input: String): ParserResult[A]
+  def parse(input: I): ParserResult[O]
 
   /**
    * Should be called by [[parse()]] method during initialization to create a result object from
@@ -30,10 +30,10 @@ trait Parser[A] {
    * It makes sure that error callback function (and potentially other things) are passed to the
    * result
    * @param input initial value to be filled in the initial result object
-   * @tparam B type of the initial value
+   * @tparam T type of the initial value
    * @return a result containing the input passed the correct error callback
    */
-  def createResult[B](input: B): ParserResult[B] = ParserResult(input, errorCallback)
+  def createResult[T](input: T): ParserResult[T] = ParserResult(input, errorCallback)
 }
 
 /**
@@ -56,15 +56,15 @@ case class ParserResult[+A](
     errors: Seq[ParserError],
     errorCallback: (ParserError => Unit) = { e: ParserError => () }) {
 
-  import com.avira.ds.parsing.ParserResult.{PipeSuccess, PipeWarning, PipeFailure, PipeResult}
+  import com.avira.ds.parsing.ParserResult.{TransformSuccess, TransformWarning, TransformFailure, TransformResult}
 
-  def pipe[B](f: A => PipeResult[B]): ParserResult[B] = value.fold[ParserResult[B]](
+  def transform[B](f: A => TransformResult[B]): ParserResult[B] = value.fold[ParserResult[B]](
     copy(value = None)
   ) { v =>
     f(v) match {
-      case PipeFailure(error) => copy(value = None).reportError(error)
-      case PipeWarning(newValue, warning) => fillValue(newValue).reportError(warning)
-      case PipeSuccess(newValue) => fillValue(newValue)
+      case TransformFailure(error) => copy(value = None).reportError(error)
+      case TransformWarning(newValue, warning) => fillValue(newValue).reportError(warning)
+      case TransformSuccess(newValue) => fillValue(newValue)
     }
   }
 
@@ -89,10 +89,10 @@ case class ParserResult[+A](
 
 object ParserResult {
 
-  sealed trait PipeResult[+R]
-  case class PipeFailure(error: ParserError) extends PipeResult[Nothing]
-  case class PipeWarning[R](value: R, warning: ParserError) extends PipeResult[R]
-  case class PipeSuccess[R](value: R) extends PipeResult[R]
+  sealed trait TransformResult[+T]
+  case class TransformFailure(error: ParserError) extends TransformResult[Nothing]
+  case class TransformWarning[T](value: T, warning: ParserError) extends TransformResult[T]
+  case class TransformSuccess[T](value: T) extends TransformResult[T]
 
   def apply[T](value: T): ParserResult[T] = ParserResult(Some(value), Seq())
 
@@ -124,7 +124,10 @@ class ParserError(
     val message: Option[String],
     val args: Seq[Any]) {
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[ParserError]
+  def canEqual(other: Any): Boolean = other match {
+    case _: ParserError => true
+    case _ => false
+  }
 
   override def equals(other: Any): Boolean = other match {
     case that: ParserError =>
