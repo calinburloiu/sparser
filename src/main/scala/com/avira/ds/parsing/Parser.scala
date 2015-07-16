@@ -94,6 +94,8 @@ object ParserResult {
   case class TransformWarning[T](value: T, warning: ParserError) extends TransformResult[T]
   case class TransformSuccess[T](value: T) extends TransformResult[T]
 
+  def apply[Nothing](): ParserResult[Nothing] = ParserResult(None, Seq())
+
   def apply[T](value: T): ParserResult[T] = ParserResult(Some(value), Seq())
 
   def apply[T](value: T, errorCallback: (ParserError => Unit)): ParserResult[T] =

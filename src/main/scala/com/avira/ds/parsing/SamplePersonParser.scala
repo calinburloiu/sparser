@@ -1,14 +1,20 @@
 package com.avira.ds.parsing
 
+import com.typesafe.scalalogging.slf4j.StrictLogging
+
 import scala.util.{Failure, Success, Try}
 
 case class SamplePerson(
     name: String,
     age: Int)
 
-class SamplePersonParser extends Parser[String, SamplePerson] {
+class SamplePersonParser extends Parser[String, SamplePerson] with StrictLogging {
 
   import com.avira.ds.parsing.ParserResult.{TransformSuccess, TransformWarning, TransformFailure}
+
+  override val errorCallback = { error: ParserError =>
+    logger.error(s"$error")
+  }
 
   override def parse(line: String): ParserResult[SamplePerson] = {
     val splitResult = createResult(line).transform { line: String =>
