@@ -59,11 +59,11 @@ case class ParserResult[+A](
   import com.avira.ds.parsing.ParserResult.{TransformSuccess, TransformWarning, TransformFailure, TransformResult}
 
   def transform[B](f: A => TransformResult[B]): ParserResult[B] = value.fold[ParserResult[B]](
-    copy(value = None)
+    this.asInstanceOf[ParserResult[B]]
   ) { v =>
     f(v) match {
       case TransformFailure(error) => copy(value = None).reportError(error)
-      case TransformWarning(newValue, warning) => fillValue(newValue).reportError(warning)
+      case TransformWarning(newValue, warning) => fillValueAndReportError(newValue, warning)
       case TransformSuccess(newValue) => fillValue(newValue)
     }
   }
@@ -77,13 +77,28 @@ case class ParserResult[+A](
   def fillValue[B](newValue: B): ParserResult[B] = this.copy(value = Some(newValue))
 
   /**
-   * Add an error to the error list.
+   * Create a new result, while adding an error to the error list and keeping the old value.
    * @param error to be added
    * @return a new ParserResult
    */
   def reportError(error: ParserError): ParserResult[A] = {
     errorCallback(error)
     this.copy(errors = errors :+ error)
+  }
+
+  /**
+   * Equivalent of calling `fillValue` and `reportError` in sequence.
+   * @param newValue new value
+   * @param error to be added
+   * @tparam B new type of the value
+   * @return a new ParserResult
+   */
+  def fillValueAndReportError[B](newValue: B, error: ParserError): ParserResult[B] = {
+    errorCallback(error)
+    this.copy(
+      value = Some(newValue),
+      errors = errors :+ error
+    )
   }
 }
 
@@ -153,7 +168,7 @@ object ParserError {
   def apply(name: String, message: Option[String], args: Any*): ParserError = new ParserError(
       name, message, args)
 
-  def apply(_name: String): ParserError = new ParserError(_name, None, Seq())
+  def apply(name: String): ParserError = new ParserError(name, None, Seq())
 
   def unapply(error: ParserError): Option[(String, Option[String], Seq[Any])] = Some(
     (error.name, error.message, error.args)

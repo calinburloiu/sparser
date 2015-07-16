@@ -1,23 +1,23 @@
 package com.avira.ds.parsing
 
-import com.typesafe.scalalogging.slf4j.StrictLogging
-
 import scala.util.{Failure, Success, Try}
 
 case class SamplePerson(
     name: String,
     age: Int)
 
-class SamplePersonParser extends Parser[String, SamplePerson] with StrictLogging {
+class SamplePersonParser extends Parser[String, SamplePerson] {
 
   import com.avira.ds.parsing.ParserResult.{TransformSuccess, TransformWarning, TransformFailure}
 
+  private var _errorsCount: Long = 0L
+
   override val errorCallback = { error: ParserError =>
-    logger.error(s"$error")
+    _errorsCount += 1
   }
 
   override def parse(line: String): ParserResult[SamplePerson] = {
-    val splitResult = createResult(line).transform { line: String =>
+    val splitResult: ParserResult[(String, String)] = createResult(line).transform { line: String =>
       val cols = line.split("\t")
       cols.length match {
         case x: Int if x < 2 =>
@@ -51,5 +51,11 @@ class SamplePersonParser extends Parser[String, SamplePerson] with StrictLogging
           )
       }
     }
+  }
+
+  def errorsCount: Long = _errorsCount
+
+  def resetErrorsCount(): Unit = {
+    _errorsCount = 0L
   }
 }
