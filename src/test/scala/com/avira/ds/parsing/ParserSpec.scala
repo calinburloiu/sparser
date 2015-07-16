@@ -101,4 +101,54 @@ class ParserSpec extends WordSpec {
       }
     }
   }
+
+  "A SamplePersonParser" when {
+    "parsing a valid TSV line" should {
+      val parser = new SamplePersonParser
+      val line = "Calin\t28"
+      parser.resetErrorsCount()
+      val result = parser.parse(line)
+
+      "return a ParserResult with a SamplePerson value and no errors" in {
+        assert(result.value.get == SamplePerson("Calin", 28))
+        assert(result.errors.isEmpty)
+      }
+
+      "have no side effects and leave errorsCount unchanged" in {
+        assert(parser.errorsCount == 0)
+      }
+    }
+
+    "parsing a TSV line with less columns than expected" should {
+      val parser = new SamplePersonParser
+      val line = "Calin"
+      parser.resetErrorsCount()
+      val result = parser.parse(line)
+
+      "return a ParserResult without value and error" in {
+        assert(result.value.isEmpty)
+        assert(result.errors.size == 1)
+      }
+
+      "have side effects and increment errorsCount" in {
+        assert(parser.errorsCount == 1)
+      }
+    }
+
+    "parsing a TSV line with more columns than expected and invalid age" should {
+      val parser = new SamplePersonParser
+      val line = "Calin\t2o\tprogrammer"
+      parser.resetErrorsCount()
+      val result = parser.parse(line)
+
+      "return a ParserResult with a SamplePerson value and errors" in {
+        assert(result.value.get == SamplePerson("Calin", -1))
+        assert(result.errors.size == 2)
+      }
+
+      "have side effects and increment errorsCount" in {
+        assert(parser.errorsCount == 2)
+      }
+    }
+  }
 }
