@@ -1,6 +1,5 @@
 package com.avira.ds.parsing
 
-import com.avira.ds.parsing.ParseResult.{TransformFailure, TransformWarning, TransformSuccess}
 import org.scalatest.WordSpec
 
 import scala.collection.mutable
@@ -9,7 +8,7 @@ class ParserSpec extends WordSpec {
 
   "A ParserResult" when {
     "it has no errors" should {
-      val result = ParseResult("some value")
+      val result = ParseSuccessResult("some value")
 
       "have 0 errors" in {
         assert(result.errors.isEmpty)
@@ -22,7 +21,7 @@ class ParserSpec extends WordSpec {
     }
 
     "it has an error" should {
-      val result = ParseResult("some value", ParseError("some error", None))
+      val result = ParseWarningResult("some value", Seq(ParseError("some error", None)))
       val newResult = result.reportError(ParseError("some other error", None))
 
       "return a result with 2 errors when a error is reported" in {
@@ -31,29 +30,29 @@ class ParserSpec extends WordSpec {
       }
     }
 
-    "it has an error callback which adds the error to a list" should {
-      val errorList = new mutable.ArrayBuffer[ParseError]
-      val callback: (ParseError => Unit) = { error: ParseError =>
-        errorList += error
-      }
-      val result = ParseResult[Nothing](callback)
-
-      "have the side effect of adding the error in the list when an error is reported" in {
-        result.reportError(ParseError("some error", None))
-        println(errorList)
-        assert(errorList.size == 1)
-      }
-    }
+//    "it has an error callback which adds the error to a list" should {
+//      val errorList = new mutable.ArrayBuffer[ParseError]
+//      val callback: (ParseError => Unit) = { error: ParseError =>
+//        errorList += error
+//      }
+//      val result = ParseResult[Nothing](callback)
+//
+//      "have the side effect of adding the error in the list when an error is reported" in {
+//        result.reportError(ParseError("some error", None))
+//        println(errorList)
+//        assert(errorList.size == 1)
+//      }
+//    }
 
     "it has a value and transform is called" should {
-      val result = ParseResult("Hello, world!", ParseError("first"))
+      val result = ParseWarningResult("Hello, world!", Seq(ParseError("first")))
 
       "return a result with a new value and the old error on success" in {
         val newResult = result.transform { value =>
           TransformSuccess(value.length)
         }
 
-        assert(newResult.value.get == 13)
+        assert(newResult.get == 13)
         assert(newResult.errors.size == 1)
       }
 
@@ -62,7 +61,7 @@ class ParserSpec extends WordSpec {
           TransformWarning(value.length, ParseError("warning"))
         }
 
-        assert(newResult.value.get == 13)
+        assert(newResult.get == 13)
         assert(newResult.errors.size == 2)
       }
 
@@ -71,13 +70,16 @@ class ParserSpec extends WordSpec {
           TransformFailure(ParseError("failure"))
         }
 
-        assert(newResult.value.isEmpty)
+        intercept[NoSuchElementException] {
+          newResult.get
+        }
         assert(newResult.errors.size == 2)
       }
     }
 
     "it doesn't have a value and transform is called" should {
-      val emptyResult = ParseResult[String](None, Seq(ParseError("error.first")))
+      val emptyResult: ParseResult[String, String] =
+        ParseErrorResult(Seq(ParseError("error.first")))
 
       "return an equal result no matter what transform does" in {
         val successResult = emptyResult.transform { value =>
@@ -92,12 +94,12 @@ class ParserSpec extends WordSpec {
           TransformFailure(ParseError("failure"))
         }
 
-        assert(successResult.asInstanceOf[ParseResult[Any]] ==
-            emptyResult.asInstanceOf[ParseResult[Any]])
-        assert(warningResult.asInstanceOf[ParseResult[Any]] ==
-            emptyResult.asInstanceOf[ParseResult[Any]])
-        assert(failureResult.asInstanceOf[ParseResult[Any]] ==
-            emptyResult.asInstanceOf[ParseResult[Any]])
+        assert(successResult.asInstanceOf[ParseResult[Any, Any]] ==
+            emptyResult.asInstanceOf[ParseResult[Any, Any]])
+        assert(warningResult.asInstanceOf[ParseResult[Any, Any]] ==
+            emptyResult.asInstanceOf[ParseResult[Any, Any]])
+        assert(failureResult.asInstanceOf[ParseResult[Any, Any]] ==
+            emptyResult.asInstanceOf[ParseResult[Any, Any]])
       }
     }
   }
@@ -110,7 +112,7 @@ class ParserSpec extends WordSpec {
       val result = parser.parse(line)
 
       "return a ParserResult with a SamplePerson value and no errors" in {
-        assert(result.value.get == SamplePerson("Calin", 28))
+        assert(result.get == SamplePerson("Calin", 28))
         assert(result.errors.isEmpty)
       }
 
@@ -126,7 +128,9 @@ class ParserSpec extends WordSpec {
       val result = parser.parse(line)
 
       "return a ParserResult without value and error" in {
-        assert(result.value.isEmpty)
+        intercept[NoSuchElementException] {
+          result.get
+        }
         assert(result.errors.size == 1)
       }
 
@@ -142,7 +146,7 @@ class ParserSpec extends WordSpec {
       val result = parser.parse(line)
 
       "return a ParserResult with a SamplePerson value and errors" in {
-        assert(result.value.get == SamplePerson("Calin", -1))
+        assert(result.get == SamplePerson("Calin", -1))
         assert(result.errors.size == 2)
       }
 

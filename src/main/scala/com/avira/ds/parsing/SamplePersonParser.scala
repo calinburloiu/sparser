@@ -8,16 +8,20 @@ case class SamplePerson(
 
 class SamplePersonParser extends Parser[String, SamplePerson] {
 
-  import com.avira.ds.parsing.ParseResult.{TransformSuccess, TransformWarning, TransformFailure}
-
   private var _errorsCount: Long = 0L
 
-  override val errorCallback = { error: ParseError =>
-    _errorsCount += 1
-  }
+  override val conf: ParserConf = ParserConf(
+    errorCallback = { error: ParseError =>
+      _errorsCount += 1
+    },
+    collectInput = true,
+    collectErrorMessages = true,
+    collectErrorArgs = true
+  )
 
-  override def parse(input: String): ParseResult[SamplePerson] = {
-    val splitResult: ParseResult[(String, String)] = createResult(input).transform { line: String =>
+  override def parse(input: String): ParseResult[String, SamplePerson] = {
+    val splitResult: ParseResult[String, (String, String)] = createResult(input, input)
+        .transform { line: String =>
       val cols = line.split("\t")
       cols.length match {
         case x: Int if x < 2 =>
