@@ -4,9 +4,9 @@ package com.avira.ds.parsing
  * Classes of this trait should be able to transform input text (like a log line) into a
  * structured object value by using `parse` method.
  *
- * The resulted value is wrapped into a [[ParserResult]] which allows the value to be absent,
+ * The resulted value is wrapped into a [[ParseResult]] which allows the value to be absent,
  * errors to be collected and a callback function (with side effects) to be called each time an
- * error occurs. Check [[ParserResult]] documentation for more information.
+ * error occurs. Check [[ParseResult]] documentation for more information.
  *
  * @tparam O structured object type
  */
@@ -14,14 +14,14 @@ trait Parser[I, O] {
   /**
    * Function to be called each time an error occurs. Default to do nothing.
    */
-  val errorCallback: (ParserError => Unit) = { e: ParserError => () }
+  val errorCallback: (ParseError => Unit) = { e: ParseError => () }
 
   /**
-   * Transform a string into a structured object wrapped in a [[ParserResult]].
+   * Transform a string into a structured object wrapped in a [[ParseResult]].
    * @param input string to transform
    * @return structured object
    */
-  def parse(input: I): ParserResult[O]
+  def parse(input: I): ParseResult[O]
 
   /**
    * Should be called by [[parse()]] method during initialization to create a result object from
@@ -33,7 +33,7 @@ trait Parser[I, O] {
    * @tparam T type of the initial value
    * @return a result containing the input passed the correct error callback
    */
-  def createResult[T](input: T): ParserResult[T] = ParserResult(input, errorCallback)
+  def createResult[T](input: T): ParseResult[T] = ParseResult(input, errorCallback)
 }
 
 /**
@@ -41,9 +41,9 @@ trait Parser[I, O] {
  * a list of parsing errors. A callback function (with side effects) can be called each time an
  * error occurs.
  *
- * As the input is being parsed by a [[Parser]], the [[ParserResult]] collects a list of errors as
- * [[ParserError]] objects. If the last error in the list is a fatal one, no value will be present
- * in the [[ParserResult]]. If the value is available errors might indicate warnings or the fact
+ * As the input is being parsed by a [[Parser]], the [[ParseResult]] collects a list of errors as
+ * [[ParseError]] objects. If the last error in the list is a fatal one, no value will be present
+ * in the [[ParseResult]]. If the value is available errors might indicate warnings or the fact
  * that the parsed value is partial.
  *
  * @param value optional value resulted from parsing
@@ -51,15 +51,16 @@ trait Parser[I, O] {
  * @param errorCallback a side effect function to be called each time an error occurs
  * @tparam A type of the value resulted from parsing
  */
-case class ParserResult[+A](
+case class ParseResult[+A](
     value: Option[A],
-    errors: Seq[ParserError],
-    errorCallback: (ParserError => Unit) = { e: ParserError => () }) {
+//    input: Option[String],
+    errors: Seq[ParseError],
+    errorCallback: (ParseError => Unit) = { e: ParseError => () }) {
 
-  import com.avira.ds.parsing.ParserResult.{TransformSuccess, TransformWarning, TransformFailure, TransformResult}
+  import com.avira.ds.parsing.ParseResult.{TransformSuccess, TransformWarning, TransformFailure, TransformResult}
 
-  def transform[B](f: A => TransformResult[B]): ParserResult[B] = value.fold[ParserResult[B]](
-    this.asInstanceOf[ParserResult[B]]
+  def transform[B](f: A => TransformResult[B]): ParseResult[B] = value.fold[ParseResult[B]](
+    this.asInstanceOf[ParseResult[B]]
   ) { v =>
     f(v) match {
       case TransformFailure(error) => copy(value = None).reportError(error)
@@ -74,14 +75,14 @@ case class ParserResult[+A](
    * @tparam B new type of the value
    * @return a new ParserResult
    */
-  def fillValue[B](newValue: B): ParserResult[B] = this.copy(value = Some(newValue))
+  def fillValue[B](newValue: B): ParseResult[B] = this.copy(value = Some(newValue))
 
   /**
    * Create a new result, while adding an error to the error list and keeping the old value.
    * @param error to be added
    * @return a new ParserResult
    */
-  def reportError(error: ParserError): ParserResult[A] = {
+  def reportError(error: ParseError): ParseResult[A] = {
     errorCallback(error)
     this.copy(errors = errors :+ error)
   }
@@ -93,7 +94,7 @@ case class ParserResult[+A](
    * @tparam B new type of the value
    * @return a new ParserResult
    */
-  def fillValueAndReportError[B](newValue: B, error: ParserError): ParserResult[B] = {
+  def fillValueAndReportError[B](newValue: B, error: ParseError): ParseResult[B] = {
     errorCallback(error)
     this.copy(
       value = Some(newValue),
@@ -102,29 +103,39 @@ case class ParserResult[+A](
   }
 }
 
-object ParserResult {
+object ParseResult {
 
   sealed trait TransformResult[+T]
-  case class TransformFailure(error: ParserError) extends TransformResult[Nothing]
-  case class TransformWarning[T](value: T, warning: ParserError) extends TransformResult[T]
+  case class TransformFailure(error: ParseError) extends TransformResult[Nothing]
+  case class TransformWarning[T](value: T, warning: ParseError) extends TransformResult[T]
   case class TransformSuccess[T](value: T) extends TransformResult[T]
 
-  def apply[Nothing](): ParserResult[Nothing] = ParserResult(None, Seq())
+  def apply[Nothing](): ParseResult[Nothing] = ParseResult(None, Seq())
 
-  def apply[T](value: T): ParserResult[T] = ParserResult(Some(value), Seq())
+  def apply[T](value: T): ParseResult[T] = ParseResult(Some(value), Seq())
 
-  def apply[T](value: T, errorCallback: (ParserError => Unit)): ParserResult[T] =
-    ParserResult(Some(value), Seq(), errorCallback)
+  def apply[T](value: T, errorCallback: (ParseError => Unit)): ParseResult[T] =
+    ParseResult(Some(value), Seq(), errorCallback)
 
-  def apply[T](value: T, error: ParserError): ParserResult[T] =
-    ParserResult(Some(value), Seq(error))
+  def apply[T](value: T, error: ParseError): ParseResult[T] =
+    ParseResult(Some(value), Seq(error))
 
-  def apply[T](value: T, error: ParserError,
-      errorCallback: (ParserError => Unit)): ParserResult[T] =
-    ParserResult(Some(value), Seq(error), errorCallback)
+  def apply[T](value: T, error: ParseError,
+      errorCallback: (ParseError => Unit)): ParseResult[T] =
+    ParseResult(Some(value), Seq(error), errorCallback)
 
-  def apply[Nothing](errorCallback: (ParserError => Unit)): ParserResult[Nothing] =
-    ParserResult(None, Seq(), errorCallback)
+  def apply[Nothing](errorCallback: (ParseError => Unit)): ParseResult[Nothing] =
+    ParseResult(None, Seq(), errorCallback)
+
+//  def unapply[T](result: ParseResult[T]): Option[(T, Seq[ParseError])] = result match {
+//    case ParseResult(Some(value), err, _) => Some((value, err))
+//    case _ => None
+//  }
+
+//  def unapply[T](result: ParseResult[T]): Option[(Option[T], Seq[ParseError])] = result match {
+//    case ParseResult(value, err, _) => Some((value, err))
+//    case _ => None
+//  }
 }
 
 /**
@@ -136,18 +147,18 @@ object ParserResult {
  *                (e.g. "Invalid age xyz, you should provide a positive integer")
  * @param args sequence of object which might help while debugging the error
  */
-class ParserError(
+class ParseError(
     val name: String,
     val message: Option[String],
     val args: Seq[Any]) {
 
   def canEqual(other: Any): Boolean = other match {
-    case _: ParserError => true
+    case _: ParseError => true
     case _ => false
   }
 
   override def equals(other: Any): Boolean = other match {
-    case that: ParserError =>
+    case that: ParseError =>
       (that canEqual this) &&
         name == that.name &&
         message == that.message &&
@@ -161,16 +172,16 @@ class ParserError(
   }
 
 
-  override def toString = s"ParserError($name, $message, $args)"
+  override def toString: String = s"ParserError($name, $message, $args)"
 }
 
-object ParserError {
-  def apply(name: String, message: Option[String], args: Any*): ParserError = new ParserError(
+object ParseError {
+  def apply(name: String, message: Option[String], args: Any*): ParseError = new ParseError(
       name, message, args)
 
-  def apply(name: String): ParserError = new ParserError(name, None, Seq())
+  def apply(name: String): ParseError = new ParseError(name, None, Seq())
 
-  def unapply(error: ParserError): Option[(String, Option[String], Seq[Any])] = Some(
+  def unapply(error: ParseError): Option[(String, Option[String], Seq[Any])] = Some(
     (error.name, error.message, error.args)
   )
 }
