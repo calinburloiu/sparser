@@ -6,18 +6,10 @@ case class SamplePerson(
     name: String,
     age: Int)
 
-class SamplePersonParser extends Parser[String, SamplePerson] {
+class SamplePersonParser(override val conf: ParserConf)
+    extends Parser[String, SamplePerson] {
 
   private var _errorsCount: Long = 0L
-
-  override val conf: ParserConf = ParserConf(
-    errorCallback = { error: ParseError =>
-      _errorsCount += 1
-    },
-    collectInput = true,
-    collectErrorMessages = true,
-    collectErrorArgs = true
-  )
 
   override def parse(input: String): ParseResult[String, SamplePerson] = {
     val splitResult: ParseResult[String, (String, String)] = createResult(input, input)
@@ -57,9 +49,4 @@ class SamplePersonParser extends Parser[String, SamplePerson] {
     }
   }
 
-  def errorsCount: Long = _errorsCount
-
-  def resetErrorsCount(): Unit = {
-    _errorsCount = 0L
-  }
 }

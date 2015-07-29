@@ -6,9 +6,11 @@ import scala.collection.mutable
 
 class ParserSpec extends WordSpec {
 
+  implicit val conf = ParserConf()
+
   "A ParserResult" when {
     "it has no errors" should {
-      val result = ParseSuccessResult("some value")
+      val result = ParseResult.Success("some value")
 
       "have 0 errors" in {
         assert(result.errors.isEmpty)
@@ -21,7 +23,7 @@ class ParserSpec extends WordSpec {
     }
 
     "it has an error" should {
-      val result = ParseWarningResult("some value", Seq(ParseError("some error", None)))
+      val result = ParseResult.Warning("some value", Seq(ParseError("some error", None)))
       val newResult = result.reportError(ParseError("some other error", None))
 
       "return a result with 2 errors when a error is reported" in {
@@ -45,7 +47,7 @@ class ParserSpec extends WordSpec {
 //    }
 
     "it has a value and transform is called" should {
-      val result = ParseWarningResult("Hello, world!", Seq(ParseError("first")))
+      val result = ParseResult.Warning("Hello, world!", Seq(ParseError("first")))
 
       "return a result with a new value and the old error on success" in {
         val newResult = result.transform { value =>
@@ -79,7 +81,7 @@ class ParserSpec extends WordSpec {
 
     "it doesn't have a value and transform is called" should {
       val emptyResult: ParseResult[String, String] =
-        ParseErrorResult(Seq(ParseError("error.first")))
+        ParseResult.Failure[String](Seq(ParseError("error.first")))
 
       "return an equal result no matter what transform does" in {
         val successResult = emptyResult.transform { value =>
@@ -106,9 +108,11 @@ class ParserSpec extends WordSpec {
 
   "A SamplePersonParser" when {
     "parsing a valid TSV line" should {
-      val parser = new SamplePersonParser
+      var errorsCount = 0
+      val parser = new SamplePersonParser(ParserConf(errorCallback = { error: ParseError =>
+        errorsCount += 1
+      }))
       val line = "Calin\t28"
-      parser.resetErrorsCount()
       val result = parser.parse(line)
 
       "return a ParserResult with a SamplePerson value and no errors" in {
@@ -117,14 +121,16 @@ class ParserSpec extends WordSpec {
       }
 
       "have no side effects and leave errorsCount unchanged" in {
-        assert(parser.errorsCount == 0)
+        assert(errorsCount == 0)
       }
     }
 
     "parsing a TSV line with less columns than expected" should {
-      val parser = new SamplePersonParser
+      var errorsCount = 0
+      val parser = new SamplePersonParser(ParserConf(errorCallback = { error: ParseError =>
+        errorsCount += 1
+      }))
       val line = "Calin"
-      parser.resetErrorsCount()
       val result = parser.parse(line)
 
       "return a ParserResult without value and error" in {
@@ -135,14 +141,16 @@ class ParserSpec extends WordSpec {
       }
 
       "have side effects and increment errorsCount" in {
-        assert(parser.errorsCount == 1)
+        assert(errorsCount == 1)
       }
     }
 
     "parsing a TSV line with more columns than expected and invalid age" should {
-      val parser = new SamplePersonParser
+      var errorsCount = 0
+      val parser = new SamplePersonParser(ParserConf(errorCallback = { error: ParseError =>
+        errorsCount += 1
+      }))
       val line = "Calin\t2o\tprogrammer"
-      parser.resetErrorsCount()
       val result = parser.parse(line)
 
       "return a ParserResult with a SamplePerson value and errors" in {
@@ -151,7 +159,7 @@ class ParserSpec extends WordSpec {
       }
 
       "have side effects and increment errorsCount" in {
-        assert(parser.errorsCount == 2)
+        assert(errorsCount == 2)
       }
     }
   }

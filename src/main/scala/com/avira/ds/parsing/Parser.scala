@@ -10,9 +10,9 @@ package com.avira.ds.parsing
  *
  * @tparam O structured object type
  */
-trait Parser[I, O] {
+trait Parser[I, O] extends Serializable {
 
-  val conf: ParserConf
+  implicit val conf: ParserConf
 
   /**
    * Function to be called each time an error occurs. Default to do nothing.
@@ -43,7 +43,7 @@ trait Parser[I, O] {
       None
     }
 
-    ParseSuccessResult(value, optionalInput, conf)
+    ParseResult.Success(value, optionalInput)
   }
 }
 
@@ -58,7 +58,7 @@ case class ParserConf(
     errorCallback: ParseError => Unit = { e: ParseError => () },
     collectInput: Boolean = true,
     collectErrorMessages: Boolean = true,
-    collectErrorArgs: Boolean = true)
+    collectErrorArgs: Boolean = true) extends Serializable
 
 // TODO Doc missing params
 /**
@@ -78,8 +78,9 @@ case class ParserConf(
 sealed abstract class ParseResult[I, +O](
     optionalValue: Option[O],
     val errors: Seq[ParseError],
-    input: Option[I],
-    conf: ParserConf = ParserConf()) {
+    val input: Option[I])(implicit conf: ParserConf) extends Serializable {
+
+  import ParseResult._
 
   def get: O
 
@@ -89,7 +90,7 @@ sealed abstract class ParseResult[I, +O](
       optionalValue.fold[ParseResult[I, OO]](this.asInstanceOf[ParseResult[I, OO]]) { v =>
     f(v) match {
       // FIXME
-      case TransformFailure(error) => ParseErrorResult(errors, input, conf).reportError(error)
+      case TransformFailure(error) => Failure(errors, input).reportError(error)
       case TransformWarning(newValue, warning) => fillValueAndReportError(newValue, warning)
       case TransformSuccess(newValue) => fillValue(newValue)
     }
@@ -103,9 +104,9 @@ sealed abstract class ParseResult[I, +O](
    */
   def fillValue[OO](newValue: OO): ParseResult[I, OO] =
     if (errors.isEmpty) {
-      ParseSuccessResult(newValue, input, conf)
+      Success(newValue, input)
     } else {
-      ParseWarningResult(newValue, errors, input, conf)
+      Warning(newValue, errors, input)
     }
 
   /**
@@ -115,7 +116,7 @@ sealed abstract class ParseResult[I, +O](
    */
   def reportError(error: ParseError): ParseResult[I, O] = {
     conf.errorCallback(error)
-    ParseErrorResult(errors :+ error, input, conf)
+    Failure(errors :+ error, input)
   }
 
   /**
@@ -127,66 +128,38 @@ sealed abstract class ParseResult[I, +O](
    */
   def fillValueAndReportError[OO](newValue: OO, error: ParseError): ParseResult[I, OO] = {
     conf.errorCallback(error)
-    ParseWarningResult(newValue, errors :+ error, input, conf)
+    Warning(newValue, errors :+ error, input)
   }
 }
 
-case class ParseSuccessResult[I, O](
-    value: O,
-    input: Option[I] = None,
-    conf: ParserConf = ParserConf()) extends ParseResult(Some(value), Seq(), input, conf) {
-
-  override def get: O = value
-  override def hasValue: Boolean = true
-}
-
-case class ParseWarningResult[I, O](
-    value: O,
-    override val errors: Seq[ParseError],
-    input: Option[I] = None,
-    conf: ParserConf = ParserConf()) extends ParseResult(Some(value), errors, input, conf) {
-
-  override def get: O = value
-  override def hasValue: Boolean = true
-}
-
-case class ParseErrorResult[I](
-    override  val errors: Seq[ParseError],
-    input: Option[I] = None,
-    conf: ParserConf = ParserConf()) extends ParseResult(None, errors, input, conf) {
-
-  override def get: Nothing = throw new NoSuchElementException
-  override def hasValue: Boolean = false
-}
-
 object ParseResult {
+  case class Success[I, O](
+      value: O,
+      override val input: Option[I] = None)(implicit conf: ParserConf)
+      extends ParseResult(Some(value), Seq(), input)(conf) {
 
-//  def apply[Nothing](): ParseResult[Nothing] = ParseResult(None, Seq())
-//
-//  def apply[T](value: T): ParseResult[T] = ParseResult(Some(value), Seq())
-//
-//  def apply[T](value: T, errorCallback: (ParseError => Unit)): ParseResult[T] =
-//    ParseResult(Some(value), Seq(), errorCallback)
-//
-//  def apply[T](value: T, error: ParseError): ParseResult[T] =
-//    ParseResult(Some(value), Seq(error))
-//
-//  def apply[T](value: T, error: ParseError,
-//      errorCallback: (ParseError => Unit)): ParseResult[T] =
-//    ParseResult(Some(value), Seq(error), errorCallback)
-//
-//  def apply[Nothing](errorCallback: (ParseError => Unit)): ParseResult[Nothing] =
-//    ParseResult(None, Seq(), errorCallback)
+    override def get: O = value
+    override def hasValue: Boolean = true
+  }
 
-  //  def unapply[T](result: ParseResult[T]): Option[(T, Seq[ParseError])] = result match {
-  //    case ParseResult(Some(value), err, _) => Some((value, err))
-  //    case _ => None
-  //  }
+  case class Warning[I, O](
+      value: O,
+      override val errors: Seq[ParseError],
+      override val input: Option[I] = None)(implicit conf: ParserConf)
+      extends ParseResult(Some(value), errors, input)(conf) {
 
-  //  def unapply[T](result: ParseResult[T]): Option[(Option[T], Seq[ParseError])] = result match {
-  //    case ParseResult(value, err, _) => Some((value, err))
-  //    case _ => None
-  //  }
+    override def get: O = value
+    override def hasValue: Boolean = true
+  }
+
+  case class Failure[I](
+      override  val errors: Seq[ParseError],
+      override val input: Option[I] = None)(implicit conf: ParserConf)
+      extends ParseResult[I, Nothing](None, errors, input)(conf) {
+
+    override def get: Nothing = throw new NoSuchElementException
+    override def hasValue: Boolean = false
+  }
 }
 
 sealed trait TransformResult[+T]
@@ -206,7 +179,7 @@ case class TransformSuccess[T](value: T) extends TransformResult[T]
 class ParseError(
     val name: String,
     val message: Option[String],
-    val args: Seq[Any]) {
+    val args: Seq[Any]) extends Serializable {
 
   def canEqual(other: Any): Boolean = other match {
     case _: ParseError => true
