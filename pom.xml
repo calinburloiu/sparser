@@ -10,7 +10,7 @@
 
   <name>sparser</name>
   <description>Scala/Spark Parser library allows abstracting input parsing
-    logic into specialized classes usable both in standalone Scala project or
+    logic into specialized classes usable both in standalone Scala projects or
     with Apache Spark.</description>
   <url>http://www.avira.com/</url>
 
