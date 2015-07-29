@@ -4,18 +4,20 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.avira.ds</groupId>
-  <artifactId>error-mining</artifactId>
+  <artifactId>sparser</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>error-mining</name>
-  <description>TODO</description>
+  <name>sparser</name>
+  <description>Scala/Spark Parser library allows abstracting input parsing
+    logic into specialized classes usable both in standalone Scala project or
+    with Apache Spark.</description>
   <url>http://www.avira.com/</url>
 
   <scm>
-    <connection>scm:git:git://github.dtc.avira.com/BigDataOperations/{artifactId}.git</connection>
-    <developerConnection>scm:git:git@github.dtc.avira.com:BigDataOperations/{artifactId}.git</developerConnection>
-    <url>https://github.dtc.avira.com/BigDataOperations/error-mining</url>
+    <connection>scm:git:git://github.dtc.avira.com/BigDataOperations/sparser.git</connection>
+    <developerConnection>scm:git:git@github.dtc.avira.com:BigDataOperations/sparser.git</developerConnection>
+    <url>https://github.dtc.avira.com/BigDataOperations/sparser</url>
   </scm>
 
   <organization>
