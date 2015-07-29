@@ -37,7 +37,7 @@ trait Parser[I, O] extends Serializable {
    * @return a result containing the input passed the correct error callback
    */
   def createResult[T](value: T, input: I): ParseResult[I, T] = {
-    val optionalInput = if (conf.collectInput) {
+    val optionalInput = if (conf.shouldCollectInput) {
       Some(input)
     } else {
       None
@@ -50,15 +50,15 @@ trait Parser[I, O] extends Serializable {
 /**
  *
  * @param errorCallback a side effect function to be called each time an error occurs
- * @param collectInput whether to collect the input into each [[ParseResult]]
- * @param collectErrorMessages whether to collect verbose messages into each [[ParseError]]
- * @param collectErrorArgs whether to collect tracking args into each [[ParseError]]
+ * @param shouldCollectInput whether to collect the input into each [[ParseResult]]
+ * @param shouldCollectErrorMessages whether to collect verbose messages into each [[ParseError]]
+ * @param shouldCollectErrorArgs whether to collect tracking args into each [[ParseError]]
  */
 case class ParserConf(
     errorCallback: ParseError => Unit = { e: ParseError => () },
-    collectInput: Boolean = true,
-    collectErrorMessages: Boolean = true,
-    collectErrorArgs: Boolean = true) extends Serializable
+    shouldCollectInput: Boolean = true,
+    shouldCollectErrorMessages: Boolean = true,
+    shouldCollectErrorArgs: Boolean = true) extends Serializable
 
 // TODO Doc missing params
 /**
@@ -116,7 +116,7 @@ sealed abstract class ParseResult[I, +O](
    */
   def reportError(error: ParseError): ParseResult[I, O] = {
     conf.errorCallback(error)
-    Failure(errors :+ error, input)
+    Failure(errors :+ error.strip, input)
   }
 
   /**
@@ -128,7 +128,7 @@ sealed abstract class ParseResult[I, +O](
    */
   def fillValueAndReportError[OO](newValue: OO, error: ParseError): ParseResult[I, OO] = {
     conf.errorCallback(error)
-    Warning(newValue, errors :+ error, input)
+    Warning(newValue, errors :+ error.strip, input)
   }
 }
 
@@ -153,7 +153,7 @@ object ParseResult {
   }
 
   case class Failure[I](
-      override  val errors: Seq[ParseError],
+      override val errors: Seq[ParseError],
       override val input: Option[I] = None)(implicit conf: ParserConf)
       extends ParseResult[I, Nothing](None, errors, input)(conf) {
 
@@ -180,6 +180,25 @@ class ParseError(
     val name: String,
     val message: Option[String],
     val args: Seq[Any]) extends Serializable {
+
+  /**
+   * Make a copy of this error without the message and/or args if [[ParserConf]] is set to do so.
+   *
+   * If [[ParserConf.shouldCollectErrorMessages]] is false a new [[ParseError]] is returned with
+   * None as message. If [[ParserConf.shouldCollectErrorArgs]] is false a new [[ParseError]] is
+   * returned with and empty list of args.
+   * @param conf a configuration object which specifies if message and/or args needs to be stripped
+   * @return
+   */
+  def strip(implicit conf: ParserConf): ParseError = {
+    if (conf.shouldCollectErrorMessages && conf.shouldCollectErrorArgs) {
+      this
+    } else {
+      val strippedMessage = if (conf.shouldCollectErrorMessages) message else None
+      val strippedArgs = if (conf.shouldCollectErrorArgs) args else Seq()
+      new ParseError(name, strippedMessage, strippedArgs)
+    }
+  }
 
   def canEqual(other: Any): Boolean = other match {
     case _: ParseError => true
