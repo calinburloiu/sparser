@@ -10,7 +10,7 @@ package com.avira.ds.parsing
  *
  * @tparam O structured object type
  */
-trait Parser[I, O] extends Serializable {
+trait Parser[I, +O] extends Serializable {
 
   implicit val conf: ParserConf
 
@@ -71,12 +71,12 @@ case class ParserConf(
  * in the [[ParseResult]]. If the value is available errors might indicate warnings or the fact
  * that the parsed value is partial.
  *
- * @param optionalValue optional value resulted from parsing
+ * @param valueOption optional value resulted from parsing
  * @param errors a list of errors collected during parsing
  * @tparam O type of the value resulted from parsing
  */
 sealed abstract class ParseResult[I, +O](
-    optionalValue: Option[O],
+    val valueOption: Option[O],
     val errors: Seq[ParseError],
     val input: Option[I])(implicit conf: ParserConf) extends Serializable {
 
@@ -84,10 +84,10 @@ sealed abstract class ParseResult[I, +O](
 
   def get: O
 
-  def hasValue: Boolean = optionalValue.isDefined
+  def hasValue: Boolean = valueOption.isDefined
 
   def transform[OO](f: O => TransformResult[OO]): ParseResult[I, OO] =
-      optionalValue.fold[ParseResult[I, OO]](this.asInstanceOf[ParseResult[I, OO]]) { v =>
+      valueOption.fold[ParseResult[I, OO]](this.asInstanceOf[ParseResult[I, OO]]) { v =>
     f(v) match {
       // FIXME
       case TransformFailure(error) => Failure(errors, input).reportError(error)
@@ -160,6 +160,9 @@ object ParseResult {
     override def get: Nothing = throw new NoSuchElementException
     override def hasValue: Boolean = false
   }
+
+  def unapply[I, O](result: ParseResult[I, O]): Option[(Option[O], Seq[ParseError], Option[I])] =
+    Some((result.valueOption, result.errors, result.input))
 }
 
 sealed trait TransformResult[+T]
@@ -218,7 +221,6 @@ class ParseError(
     val state = Seq(name, message, args)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
-
 
   override def toString: String = s"ParserError($name, $message, $args)"
 }
