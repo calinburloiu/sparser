@@ -1,5 +1,6 @@
 package com.avira.ds.parsing
 
+import com.avira.ds.parsing.sample.{SamplePerson, SamplePersonParser}
 import org.scalatest.WordSpec
 
 import scala.collection.mutable

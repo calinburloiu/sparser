@@ -1,6 +1,7 @@
 package com.avira.ds
 
-import com.avira.ds.parsing.{Parser, ParserConf, SamplePersonParser, SamplePerson}
+import com.avira.ds.parsing.sample.{SamplePersonParser, SamplePerson}
+import com.avira.ds.parsing.{Parser, ParserConf}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}

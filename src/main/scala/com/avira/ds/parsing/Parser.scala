@@ -12,7 +12,7 @@ package com.avira.ds.parsing
  */
 trait Parser[I, +O] extends Serializable {
 
-  implicit val conf: ParserConf
+  implicit val conf: ParserConf = ParserConf()
 
   /**
    * Function to be called each time an error occurs. Default to do nothing.

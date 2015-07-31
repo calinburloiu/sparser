@@ -1,6 +1,7 @@
 package com.avira.ds
 
 import com.avira.ds.parsing._
+import com.avira.ds.parsing.sample.SamplePersonParser
 import com.typesafe.scalalogging.slf4j.StrictLogging
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.SparkContext._

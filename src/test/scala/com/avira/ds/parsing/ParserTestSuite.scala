@@ -4,7 +4,7 @@ import org.scalatest.WordSpec
 import scala.reflect.runtime.{universe => ru}
 import scala.reflect.ClassTag
 
-abstract class ParserTestSuite[I, O: ClassTag] extends WordSpec {
+abstract class ParserTestSuite[I, O: ru.TypeTag : ClassTag] extends WordSpec {
 
   def parser: Parser[I, O]
 
@@ -15,38 +15,38 @@ abstract class ParserTestSuite[I, O: ClassTag] extends WordSpec {
   private val _mirror = ru.runtimeMirror(getClass.getClassLoader)
 
   def start(): Unit = {
-    parser.getClass.getSimpleName when {
-      for (test <- tests) {
-        s"parsing ${test.name}" should {
-          val ParseResult(valueOption, errors, _) = parser.parse(test.input)
-          val errorNames = errors.map(_.name).toSet
+    for (test <- tests) {
+      s"""Parsing input "${test.name}"""" should {
+        val ParseResult(actualValueOption, errors, _) = parser.parse(test.input)
+        val errorNames = errors.map(_.name).toSet
 
-          // Check field values.
-          valueOption.foreach { value =>
-            for (expectation <- test.expectedOutput.fields) {
-              s"extract field ${expectation._1}" in {
-                assert(getFieldValue(value, expectation._1) == expectation._2)
-              }
+        // Check field values.
+        actualValueOption.foreach { actualValue =>
+          for ((fieldName, expectedFieldValue) <- test.expectedValue.fields) {
+            s"""extract field "$fieldName"""" in {
+              assert(getFieldValue(actualValue, fieldName) == expectedFieldValue)
             }
           }
+        }
 
-          // Check errors.
-          for (expectedErrorName <- test.expectedErrors.errorNames) {
-            s"report error $expectedErrorName" in {
-              assert(errorNames.contains(expectedErrorName))
-            }
+        // Check errors.
+        for (expectedErrorName <- test.expectedErrors.errorNames) {
+          s"""report error "$expectedErrorName"""" in {
+            assert(errorNames.contains(expectedErrorName))
           }
         }
       }
     }
   }
 
-  private def getFieldValue(obj: O, fieldName: String): Any = {
-    val fieldTermSymbol = ru.typeOf[SamplePerson].declaration(ru.newTermName(fieldName)).asTerm
+  private def getFieldValue[T : ru.TypeTag : ClassTag](obj: T, fieldName: String): Any = {
+    val fieldTermSymbol = getTypeTag(obj).tpe.declaration(ru.newTermName(fieldName)).asTerm
     val objMirror = _mirror.reflect(obj)
     val fieldMirror = objMirror.reflectField(fieldTermSymbol)
     fieldMirror.get
   }
+
+  def getTypeTag[T : ru.TypeTag](obj: T) = ru.typeTag[T]
 }
 
 object ParserTestSuite {
@@ -56,7 +56,7 @@ object ParserTestSuite {
 case class ParserTest[I](
     name: String,
     input: I,
-    expectedOutput: PotentialExpectedValue,
+    expectedValue: PotentialExpectedValue,
     expectedErrors: ExpectedErrors = ExpectedErrors())
 
 sealed abstract class PotentialExpectedValue {
