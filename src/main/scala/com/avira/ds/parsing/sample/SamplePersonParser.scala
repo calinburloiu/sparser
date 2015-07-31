@@ -1,4 +1,6 @@
-package com.avira.ds.parsing
+package com.avira.ds.parsing.sample
+
+import com.avira.ds.parsing._
 
 import scala.util.{Failure, Success, Try}
 
