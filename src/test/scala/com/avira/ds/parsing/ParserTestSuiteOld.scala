@@ -4,7 +4,7 @@ import org.scalatest.WordSpec
 import scala.reflect.runtime.{universe => ru}
 import scala.reflect.ClassTag
 
-abstract class ParserTestSuite[I, O: ru.TypeTag : ClassTag] extends WordSpec {
+abstract class ParserTestSuiteOld[I, O: ru.TypeTag : ClassTag] extends WordSpec {
 
   def parser: Parser[I, O]
 
@@ -49,7 +49,7 @@ abstract class ParserTestSuite[I, O: ru.TypeTag : ClassTag] extends WordSpec {
   def getTypeTag[T : ru.TypeTag](obj: T): ru.TypeTag[T] = ru.typeTag[T]
 }
 
-object ParserTestSuite {
+object ParserTestSuiteOld {
 
 }
 

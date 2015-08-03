@@ -2,7 +2,7 @@ package com.avira.ds.parsing.sample
 
 import com.avira.ds.parsing._
 
-class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] {
+class SamplePersonParserTestSuiteOld extends ParserTestSuiteOld[String, SamplePerson] {
 
   lazy val parser: Parser[String, SamplePerson] = new SamplePersonParser(ParserConf())
 
