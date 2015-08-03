@@ -46,7 +46,7 @@ abstract class ParserTestSuite[I, O: ru.TypeTag : ClassTag] extends WordSpec {
     fieldMirror.get
   }
 
-  def getTypeTag[T : ru.TypeTag](obj: T) = ru.typeTag[T]
+  def getTypeTag[T : ru.TypeTag](obj: T): ru.TypeTag[T] = ru.typeTag[T]
 }
 
 object ParserTestSuite {
