@@ -8,9 +8,6 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
 
   def parser: Parser[I, O]
 
-  @deprecated
-  def tests: Seq[ParserTest] = ???
-
   case class ParserTest(
       name: String,
       input: I,
@@ -40,34 +37,6 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
       }
     }
   }
-
-  @deprecated
-  def start(): Unit = {
-    for (test <- tests) {
-      s"""Parsing input "${test.name}"""" should {
-        val ParseResult(actualValueOption, errors, _) = parser.parse(test.input)
-        val errorNames = errors.map(_.name).toSet
-
-        // Check field values.
-        actualValueOption.foreach { actualValue =>
-          for ((actualFieldValueFunc, expectedFieldValue) <- test.expectedValue.fieldValues) {
-            s"""extract field unknown${actualFieldValueFunc.hashCode()}""" in {
-              assert(
-                actualFieldValueFunc(actualValue) == expectedFieldValue
-              )
-            }
-          }
-        }
-
-        // Check errors.
-        for (expectedErrorName <- test.expectedErrors.errorNames) {
-          s"""report error "$expectedErrorName"""" in {
-            assert(errorNames.contains(expectedErrorName))
-          }
-        }
-      }
-    }
-  }
 }
 
 sealed abstract class PotentialExpectedValue[O] {
@@ -87,7 +56,7 @@ class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] 
   ParserTest("Good",
     "Calin\t28",
     ExpectedValue(
-      (_.name, "Caliin"),
+      (_.name, "Calin"),
       (_.age, 28)
     )
   )
