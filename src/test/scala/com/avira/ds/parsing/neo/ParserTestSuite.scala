@@ -11,33 +11,44 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
   @deprecated
   def tests: Seq[ParserTest] = ???
 
-  case class ParserTest(
-      name: String,
-      input: I,
-      expectedValue: PotentialExpectedValue[O],
-      expectedErrors: ExpectedErrors = ExpectedErrors()) {
+  class ParserTest(
+      val name: String,
+      val input: I,
+      val expectedValue: PotentialExpectedValue[O],
+      val expectedErrors: ExpectedErrors = ExpectedErrors())
 
-    s"""Parsing input "$name"""" should {
-      val ParseResult(actualValueOption, errors, _) = parser.parse(input)
-      val errorNames = errors.map(_.name).toSet
+  object ParserTest {
+    def apply(
+        name: String,
+        input: I,
+        expectedValue: PotentialExpectedValue[O],
+        expectedErrors: ExpectedErrors = ExpectedErrors()): ParserTest = {
+      val parserTest = new ParserTest(name, input, expectedValue, expectedErrors)
 
-      // Check field values.
-      actualValueOption.foreach { actualValue =>
-        for ((actualFieldValueFunc, expectedFieldValue) <- expectedValue.fieldValues) {
-          s"""extract field unknown${actualFieldValueFunc.hashCode()}""" in {
-            assert(
-              actualFieldValueFunc(actualValue) == expectedFieldValue
-            )
+      s"""Parsing input "$name"""" should {
+        val ParseResult(actualValueOption, errors, _) = parser.parse(input)
+        val errorNames = errors.map(_.name).toSet
+
+        // Check field values.
+        actualValueOption.foreach { actualValue =>
+          for ((actualFieldValueFunc, expectedFieldValue) <- expectedValue.fieldValues) {
+            s"""extract field unknown${actualFieldValueFunc.hashCode()}""" in {
+              assert(
+                actualFieldValueFunc(actualValue) == expectedFieldValue
+              )
+            }
+          }
+        }
+
+        // Check errors.
+        for (expectedErrorName <- expectedErrors.errorNames) {
+          s"""report error "$expectedErrorName"""" in {
+            assert(errorNames.contains(expectedErrorName))
           }
         }
       }
 
-      // Check errors.
-      for (expectedErrorName <- expectedErrors.errorNames) {
-        s"""report error "$expectedErrorName"""" in {
-          assert(errorNames.contains(expectedErrorName))
-        }
-      }
+      parserTest
     }
   }
 
@@ -53,7 +64,7 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
           for ((actualFieldValueFunc, expectedFieldValue) <- test.expectedValue.fieldValues) {
             s"""extract field unknown${actualFieldValueFunc.hashCode()}""" in {
               assert(
-                actualFieldValueFunc(actualValue) == expectedFieldValue
+                actualFieldValueFunc(actualValue) === expectedFieldValue
               )
             }
           }
