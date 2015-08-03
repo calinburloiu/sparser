@@ -8,10 +8,40 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
 
   def parser: Parser[I, O]
 
-  def tests: Seq[ParserTest[I, O]]
+  @deprecated
+  def tests: Seq[ParserTest] = ???
 
-  start()
+  case class ParserTest(
+      name: String,
+      input: I,
+      expectedValue: PotentialExpectedValue[O],
+      expectedErrors: ExpectedErrors = ExpectedErrors()) {
 
+    s"""Parsing input "$name"""" should {
+      val ParseResult(actualValueOption, errors, _) = parser.parse(input)
+      val errorNames = errors.map(_.name).toSet
+
+      // Check field values.
+      actualValueOption.foreach { actualValue =>
+        for ((actualFieldValueFunc, expectedFieldValue) <- expectedValue.fieldValues) {
+          s"""extract field unknown${actualFieldValueFunc.hashCode()}""" in {
+            assert(
+              actualFieldValueFunc(actualValue) == expectedFieldValue
+            )
+          }
+        }
+      }
+
+      // Check errors.
+      for (expectedErrorName <- expectedErrors.errorNames) {
+        s"""report error "$expectedErrorName"""" in {
+          assert(errorNames.contains(expectedErrorName))
+        }
+      }
+    }
+  }
+
+  @deprecated
   def start(): Unit = {
     for (test <- tests) {
       s"""Parsing input "${test.name}"""" should {
@@ -40,12 +70,6 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
   }
 }
 
-case class ParserTest[I, O](
-    name: String,
-    input: I,
-    expectedValue: PotentialExpectedValue[O],
-    expectedErrors: ExpectedErrors = ExpectedErrors())
-
 sealed abstract class PotentialExpectedValue[O] {
   def fieldValues: Seq[(O => Any, Any)]
 }
@@ -60,13 +84,11 @@ case class ExpectedErrors(errorNames: String*)
 class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] {
   override lazy val parser: Parser[String, SamplePerson] = new SamplePersonParser(ParserConf())
 
-  override lazy val tests: Seq[ParserTest[String, SamplePerson]] = Seq(
-    ParserTest("Good",
-      "Calin\t28",
-      ExpectedValue(
-        (_.name, "Calin"),
-        (_.age, 28)
-      )
+  ParserTest("Good",
+    "Calin\t28",
+    ExpectedValue(
+      (_.name, "Caliin"),
+      (_.age, 28)
     )
   )
 }
