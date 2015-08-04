@@ -1,8 +1,10 @@
-package com.avira.ds.parsing
+package com.avira.ds.parsing.deprecated
 
+import com.avira.ds.parsing.{ParseResult, Parser}
 import org.scalatest.WordSpec
-import scala.reflect.runtime.{universe => ru}
+
 import scala.reflect.ClassTag
+import scala.reflect.runtime.{universe => ru}
 
 abstract class ParserTestSuiteOld[I, O: ru.TypeTag : ClassTag] extends WordSpec {
 

@@ -1,7 +1,6 @@
-package com.avira.ds.parsing.neo
+package com.avira.ds.parsing
 
 import com.avira.ds.parsing.sample.{SamplePerson, SamplePersonParser}
-import com.avira.ds.parsing.{ParseResult, ParserConf, Parser}
 import org.scalatest.WordSpec
 
 abstract class ParserTestSuite[I, O] extends WordSpec {
