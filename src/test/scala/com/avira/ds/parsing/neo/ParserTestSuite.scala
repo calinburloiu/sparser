@@ -11,7 +11,7 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
   case class ParserTest(
       name: String,
       input: I,
-      expectedValue: PotentialExpectedValue[O],
+      expectedValue: ExpectedValueOption[O],
       expectedErrors: ExpectedErrors = ExpectedErrors()) {
 
     s"""Parsing input "$name"""" should {
@@ -20,10 +20,10 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
 
       // Check field values.
       actualValueOption.foreach { actualValue =>
-        for ((actualFieldValueFunc, expectedFieldValue) <- expectedValue.fieldValues) {
-          s"""extract field unknown${actualFieldValueFunc.hashCode()}""" in {
+        for (FieldMatch(fieldName, select, expectedFieldValue) <- expectedValue.fieldValues) {
+          s"""extract field $fieldName""" in {
             assert(
-              actualFieldValueFunc(actualValue) == expectedFieldValue
+              select(actualValue) == expectedFieldValue
             )
           }
         }
@@ -39,14 +39,20 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
   }
 }
 
-sealed abstract class PotentialExpectedValue[O] {
-  def fieldValues: Seq[(O => Any, Any)]
+sealed abstract class ExpectedValueOption[O] {
+  def fieldValues: Seq[FieldMatch[O]]
 }
-case object NoExpectedValue extends PotentialExpectedValue[Nothing] {
-  override val fieldValues: Seq[(Nothing => Any, Any)] = Seq()
+case object ExpectedNoValue extends ExpectedValueOption[Nothing] {
+  override val fieldValues: Seq[FieldMatch[Nothing]] = Seq()
 }
 case class ExpectedValue[O](
-    override val fieldValues: (O => Any, Any)*) extends PotentialExpectedValue[O]
+    override val fieldValues: FieldMatch[O]*) extends ExpectedValueOption[O]
+
+case class FieldMatch[O](fieldName: String, select: O => Any, expectedFieldValue: Any)
+object FieldMatch {
+  def apply[O](select: O => Any, expectedFieldValue: Any): FieldMatch[O] =
+    FieldMatch(s"unknown${select.hashCode()}", select, expectedFieldValue)
+}
 
 case class ExpectedErrors(errorNames: String*)
 
@@ -56,8 +62,8 @@ class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] 
   ParserTest("Good",
     "Calin\t28",
     ExpectedValue(
-      (_.name, "Calin"),
-      (_.age, 28)
+      FieldMatch("name", _.name, "Calin"),
+      FieldMatch(_.age, 28)
     )
   )
 }
