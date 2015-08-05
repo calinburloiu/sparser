@@ -12,4 +12,23 @@ class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] 
       FieldMatch(_.age, 28)
     )
   )
+
+  ParserTest("Bad age",
+    "Andrei\t2o",
+    ExpectedValue(
+      FieldMatch(_.name, "Andrei"),
+      FieldMatch(_.age, -1)
+    ),
+    ExpectedErrors(
+      "age.invalid"
+    )
+  )
+
+  ParserTest("Bad input",
+    "Burloiu",
+    ExpectedNoValue(),
+    ExpectedErrors(
+      "columns.notEnough"
+    )
+  )
 }

@@ -40,8 +40,8 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
 sealed abstract class ExpectedValueOption[O] {
   def fieldValues: Seq[FieldMatch[O]]
 }
-case object ExpectedNoValue extends ExpectedValueOption[Nothing] {
-  override val fieldValues: Seq[FieldMatch[Nothing]] = Seq()
+case class ExpectedNoValue[O]() extends ExpectedValueOption[O] {
+  override val fieldValues: Seq[FieldMatch[O]] = Seq()
 }
 case class ExpectedValue[O](
     override val fieldValues: FieldMatch[O]*) extends ExpectedValueOption[O]

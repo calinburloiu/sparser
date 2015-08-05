@@ -12,7 +12,7 @@ object FieldMatch {
 
   def apply[O](select: O => Any, expectedFieldValue: Any): FieldMatch[O] = macro applyImpl[O]
 
-  def applyImpl[O: c.WeakTypeTag](c: Context)(
+  def applyImpl[O](c: Context)(
       select: c.Expr[O => Any],
       expectedFieldValue: c.Expr[Any]): c.Expr[FieldMatch[O]] = {
     import c.universe._

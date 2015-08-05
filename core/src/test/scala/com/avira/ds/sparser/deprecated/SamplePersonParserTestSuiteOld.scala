@@ -1,6 +1,7 @@
 package com.avira.ds.sparser.deprecated
 
-import com.avira.ds.sparser._
+import com.avira.ds.sparser.{Parser, ParserConf}
+import com.avira.ds.sparser.deprecated._
 import com.avira.ds.sparser.sample.{SamplePerson, SamplePersonParser}
 
 class SamplePersonParserTestSuiteOld extends ParserTestSuiteOld[String, SamplePerson] {
@@ -10,25 +11,25 @@ class SamplePersonParserTestSuiteOld extends ParserTestSuiteOld[String, SamplePe
   lazy val tests = Seq(
     ParserTest("Good",
       "Calin\t28",
-      deprecated.ExpectedValue(
+      ExpectedValue(
         "name" -> "Calin",
         "age" -> 28
       )
     ),
     ParserTest("Bad age",
       "Andrei\t2o",
-      deprecated.ExpectedValue(
+      ExpectedValue(
         "name" -> "Andrei",
         "age" -> -1
       ),
-      deprecated.ExpectedErrors(
+      ExpectedErrors(
         "age.invalid"
       )
     ),
     ParserTest("Bad input",
       "Burloiu",
       NoExpectedValue,
-      deprecated.ExpectedErrors(
+      ExpectedErrors(
         "columns.notEnough"
       )
     )
