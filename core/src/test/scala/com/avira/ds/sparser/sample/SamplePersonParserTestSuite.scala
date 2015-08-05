@@ -7,28 +7,40 @@ class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] 
 
   ParserTest("Good",
     "Calin\t28",
-    ExpectedValue(
-      FieldMatch(_.name, "Calin"),
-      FieldMatch(_.age, 28)
+    ExpectedSuccessResult(
+      ExpectedValue(
+        FieldMatch(_.name, "Calin"),
+        FieldMatch(_.age, 28)
+      )
+    )
+  )
+
+  ParserTest("Good (only check if value exists)",
+    "Calin\t28",
+    ExpectedSuccessResult(
+      ExpectedValue()
     )
   )
 
   ParserTest("Bad age",
     "Andrei\t2o",
-    ExpectedValue(
-      FieldMatch(_.name, "Andrei"),
-      FieldMatch(_.age, -1)
-    ),
-    ExpectedErrors(
-      "age.invalid"
+    ExpectedWarningResult(
+      ExpectedValue(
+        FieldMatch(_.name, "Andrei"),
+        FieldMatch(_.age, -1)
+      ),
+      ExpectedErrors(
+        "age.invalid"
+      )
     )
   )
 
   ParserTest("Bad input",
     "Burloiu",
-    ExpectedNoValue(),
-    ExpectedErrors(
-      "columns.notEnough"
+    ExpectedErrorResult(
+      ExpectedErrors(
+        "columns.notEnough"
+      )
     )
   )
 }

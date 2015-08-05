@@ -9,8 +9,7 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
   case class ParserTest(
       name: String,
       input: I,
-      expectedValue: ExpectedValueOption[O],
-      expectedErrors: ExpectedErrors = ExpectedErrors()) {
+      expectedResult: ExpectedResult[O]) {
 
     s"""Parsing input "$name"""" should {
       val ParseResult(actualValueOption, errors, _) = parser.parse(input)
@@ -18,17 +17,25 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
 
       // Check field values.
       actualValueOption.foreach { actualValue =>
-        for (FieldMatch(fieldName, select, expectedFieldValue) <- expectedValue.fieldValues) {
+        val fieldValues = expectedResult.expectedValueOption
+          .fold(Seq[FieldMatch[O]]())(_.fieldValues)
+        for (FieldMatch(fieldName, selectField, expectedFieldValue) <- fieldValues) {
           s"""extract field $fieldName""" in {
             assert(
-              select(actualValue) == expectedFieldValue
+              selectField(actualValue) == expectedFieldValue
             )
+          }
+        }
+
+        if (fieldValues.isEmpty) {
+          "output a value" in {
+            assert(true)
           }
         }
       }
 
       // Check errors.
-      for (expectedErrorName <- expectedErrors.errorNames) {
+      for (expectedErrorName <- expectedResult.expectedErrors.errorNames) {
         s"""report error "$expectedErrorName"""" in {
           assert(errorNames.contains(expectedErrorName))
         }
@@ -37,14 +44,26 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
   }
 }
 
-sealed abstract class ExpectedValueOption[O] {
-  def fieldValues: Seq[FieldMatch[O]]
-}
-case class ExpectedNoValue[O]() extends ExpectedValueOption[O] {
-  override val fieldValues: Seq[FieldMatch[O]] = Seq()
-}
-case class ExpectedValue[O](
-    override val fieldValues: FieldMatch[O]*) extends ExpectedValueOption[O]
+
+sealed abstract class ExpectedResult[O](
+  val expectedValueOption: Option[ExpectedValue[O]],
+  val expectedErrors: ExpectedErrors)
+
+case class ExpectedSuccessResult[O](
+    expectedValue: ExpectedValue[O])
+    extends ExpectedResult[O](Some(expectedValue), ExpectedErrors())
+
+case class ExpectedWarningResult[O](
+    expectedValue: ExpectedValue[O],
+    override val expectedErrors: ExpectedErrors)
+    extends ExpectedResult[O](Some(expectedValue), expectedErrors)
+
+case class ExpectedErrorResult[O](
+    override val expectedErrors: ExpectedErrors)
+    extends ExpectedResult[O](None, expectedErrors)
+
+
+case class ExpectedValue[O](fieldValues: FieldMatch[O]*)
 
 case class ExpectedErrors(errorNames: String*)
 

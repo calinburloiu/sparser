@@ -9,13 +9,13 @@ case class Zz(z1: Float)
 
 class MacrosSuite extends WordSpec {
 
-  "selectToString" should {
+  "selectFieldToString" should {
     "convert to String a simple first-level field selector" in {
-      assert(selectToString[Xx](_.x1) === "x1")
+      assert(selectFieldToString[Xx](_.x1) === "x1")
     }
 
     "convert to String a nested selector with get and apply" in {
-      assert(selectToString[Xx](_.xMore.get.yMore(1).z1) === "xMore.get.yMore(1).z1")
+      assert(selectFieldToString[Xx](_.xMore.get.yMore(1).z1) === "xMore.get.yMore(1).z1")
     }
   }
 

@@ -5,31 +5,31 @@ import scala.reflect.macros.Context
 
 case class FieldMatch[O](
     fieldName: String,
-    select: O => Any,
+    selectField: O => Any,
     expectedFieldValue: Any)
 
 object FieldMatch {
 
-  def apply[O](select: O => Any, expectedFieldValue: Any): FieldMatch[O] = macro applyImpl[O]
+  def apply[O](selectField: O => Any, expectedFieldValue: Any): FieldMatch[O] = macro applyImpl[O]
 
   def applyImpl[O](c: Context)(
-      select: c.Expr[O => Any],
+      selectField: c.Expr[O => Any],
       expectedFieldValue: c.Expr[Any]): c.Expr[FieldMatch[O]] = {
     import c.universe._
 
-    val funcBodyRepExpr = selectToStringImpl(c)(select)
+    val funcBodyRepExpr = selectFieldToStringImpl(c)(selectField)
 
     reify {
-      FieldMatch(funcBodyRepExpr.splice, select.splice, expectedFieldValue.splice)
+      FieldMatch(funcBodyRepExpr.splice, selectField.splice, expectedFieldValue.splice)
     }
   }
 
-  def selectToString[O](f: O => Any): String = macro selectToStringImpl[O]
+  def selectFieldToString[O](selectField: O => Any): String = macro selectFieldToStringImpl[O]
 
-  def selectToStringImpl[O](c: Context)(f: c.Expr[O => Any]): c.Expr[String] = {
+  def selectFieldToStringImpl[O](c: Context)(selectField: c.Expr[O => Any]): c.Expr[String] = {
     import c.universe._
 
-    val funcBodyRep = f.tree match {
+    val funcBodyRep = selectField.tree match {
       case Function(_, s) =>
         val showOutput = show(s)
         // Remove prefix:
