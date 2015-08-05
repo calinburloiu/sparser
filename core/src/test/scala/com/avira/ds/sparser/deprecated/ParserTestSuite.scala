@@ -6,7 +6,8 @@ import org.scalatest.WordSpec
 import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
 
-abstract class ParserTestSuiteOld[I, O: ru.TypeTag : ClassTag] extends WordSpec {
+@deprecated
+abstract class ParserTestSuite[I, O: ru.TypeTag : ClassTag] extends WordSpec {
 
   def parser: Parser[I, O]
 
@@ -51,22 +52,26 @@ abstract class ParserTestSuiteOld[I, O: ru.TypeTag : ClassTag] extends WordSpec 
   def getTypeTag[T : ru.TypeTag](obj: T): ru.TypeTag[T] = ru.typeTag[T]
 }
 
-object ParserTestSuiteOld {
-
-}
-
+@deprecated
 case class ParserTest[I](
     name: String,
     input: I,
-    expectedValue: PotentialExpectedValue,
+    expectedValue: ExpectedValueOption,
     expectedErrors: ExpectedErrors = ExpectedErrors())
 
-sealed abstract class PotentialExpectedValue {
+
+@deprecated
+sealed abstract class ExpectedValueOption {
   def fields: Seq[(String, Any)]
 }
-case object NoExpectedValue extends PotentialExpectedValue {
+
+@deprecated
+case object ExpectedNoValue extends ExpectedValueOption {
   override val fields: Seq[(String, Any)] = Seq()
 }
-case class ExpectedValue(override val fields: (String, Any)*) extends PotentialExpectedValue
+@deprecated
+case class ExpectedValue(override val fields: (String, Any)*) extends ExpectedValueOption
 
+
+@deprecated
 case class ExpectedErrors(errorNames: String*)

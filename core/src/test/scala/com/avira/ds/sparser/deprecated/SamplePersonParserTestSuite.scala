@@ -1,10 +1,10 @@
 package com.avira.ds.sparser.deprecated
 
 import com.avira.ds.sparser.{Parser, ParserConf}
-import com.avira.ds.sparser.deprecated._
 import com.avira.ds.sparser.sample.{SamplePerson, SamplePersonParser}
 
-class SamplePersonParserTestSuiteOld extends ParserTestSuiteOld[String, SamplePerson] {
+@deprecated
+class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] {
 
   lazy val parser: Parser[String, SamplePerson] = new SamplePersonParser(ParserConf())
 
@@ -28,7 +28,7 @@ class SamplePersonParserTestSuiteOld extends ParserTestSuiteOld[String, SamplePe
     ),
     ParserTest("Bad input",
       "Burloiu",
-      NoExpectedValue,
+      ExpectedNoValue,
       ExpectedErrors(
         "columns.notEnough"
       )
