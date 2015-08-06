@@ -37,7 +37,7 @@ class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] 
 
   ParserTest("Bad input",
     "Burloiu",
-    ExpectedErrorResult(
+    ExpectedFailureResult(
       ExpectedErrors(
         "columns.notEnough"
       )

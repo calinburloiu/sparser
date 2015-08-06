@@ -58,7 +58,7 @@ case class ExpectedWarningResult[O](
     override val expectedErrors: ExpectedErrors)
     extends ExpectedResult[O](Some(expectedValue), expectedErrors)
 
-case class ExpectedErrorResult[O](
+case class ExpectedFailureResult[O](
     override val expectedErrors: ExpectedErrors)
     extends ExpectedResult[O](None, expectedErrors)
 

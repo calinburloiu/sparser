@@ -1,10 +1,10 @@
-package com.avira.ds
+package com.avira.ds.sparser.spark
 
 import com.avira.ds.sparser._
 import com.avira.ds.sparser.sample.SamplePersonParser
+import com.avira.ds.sparser.spark.SparserSpark._
 import com.typesafe.scalalogging.slf4j.StrictLogging
-import org.apache.spark.{SparkContext, SparkConf}
-import org.apache.spark.SparkContext._
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.util.Try
 
@@ -19,27 +19,23 @@ object Main extends StrictLogging {
     val shouldCollectErrorMessages = Try(args(2).toBoolean).getOrElse(true)
     val shouldCollectErrorArgs = Try(args(3).toBoolean).getOrElse(true)
 
-    val errorsAcc = sc.accumulator(0L, "errors")
+    val notEnoughColsAcc = sc.accumulator(0L, "columns.notEnough")
+    val tooManyColsAcc = sc.accumulator(0L, "columns.tooMany")
+    val invalidAgeAcc = sc.accumulator(0L, "age.invalid")
+    val accumulators = Seq(notEnoughColsAcc, tooManyColsAcc, invalidAgeAcc)
+
     val parserConf: ParserConf = ParserConf(
-      errorCallback = { err: ParseError =>
-        errorsAcc += 1
-      },
+      errorCallback = createAccumulatorsParserCallback(accumulators),
       shouldCollectInput = shouldCollectInput,
       shouldCollectErrorMessages = shouldCollectErrorMessages,
       shouldCollectErrorArgs = shouldCollectErrorArgs
     )
-    val parser = new SamplePersonParser(parserConf)
+    implicit val parser = new SamplePersonParser(parserConf)
 
     val input = sc.textFile(inputPath)
 
-    val parseResults = input.map { line =>
-      parser.parse(line)
-    }
-
-    val persons = parseResults.flatMap {
-      case ParseResult.Success(value, _) => Some(value)
-      case _ => None
-    }
+    val parseResults = input.parseWithErrors
+    val persons = input.parse
 
     val groupedErrors = parseResults.flatMap {
       case ParseResult.Warning(_, warns, line) => Some((line, warns))
@@ -57,7 +53,10 @@ object Main extends StrictLogging {
     val l_errors = groupedErrors.collect()
     val l_errorsWithInput = explodedErrors.collect()
 
-    logger.info(s"Parsing finished with ${errorsAcc.value} errors.")
+    logger.info(s"Accumulators:")
+    accumulators.foreach { acc =>
+      logger.info(s"  ${acc.name.get}=${acc.value}")
+    }
     sc.stop()
 
     logger.info("Parsed:")
