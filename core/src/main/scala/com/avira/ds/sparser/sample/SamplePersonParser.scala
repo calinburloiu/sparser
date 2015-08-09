@@ -11,8 +11,6 @@ case class SamplePerson(
 class SamplePersonParser(override val conf: ParserConf)
     extends Parser[String, SamplePerson] {
 
-  private var _errorsCount: Long = 0L
-
   override def parse(input: String): ParseResult[String, SamplePerson] = {
     val splitResult: ParseResult[String, (String, String)] = createResult(input, input)
         .transform { line: String =>

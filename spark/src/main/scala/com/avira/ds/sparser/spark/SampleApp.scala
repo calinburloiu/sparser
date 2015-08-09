@@ -1,9 +1,9 @@
 package com.avira.ds.sparser.spark
 
 import com.avira.ds.sparser._
-import com.avira.ds.sparser.sample.SamplePersonParser
-import com.avira.ds.sparser.spark.SparserSpark._
-import com.typesafe.scalalogging.slf4j.{LazyLogging, StrictLogging}
+import com.avira.ds.sparser.sample.{SamplePerson, SamplePersonParser}
+import com.typesafe.scalalogging.slf4j.StrictLogging
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.util.Try
@@ -29,8 +29,11 @@ object SampleApp extends StrictLogging {
       shouldCollectErrorMessages = opts.shouldCollectErrorMessages,
       shouldCollectErrorArgs = opts.shouldCollectErrorArgs
     )
-    implicit val parser = new SamplePersonParser(parserConf)
-    implicit val parserGenerator = { () => new SamplePersonParser(parserConf) }
+    implicit val parserGenerator: () => Parser[String, SamplePerson] = { () =>
+      new SamplePersonParser(parserConf)
+    }
+    implicit val parser: Parser[String, SamplePerson] = new SamplePersonParser(parserConf)
+    implicit val broadcastParser: Broadcast[Parser[String, SamplePerson]] = sc.broadcast(parser)
 
     runWithoutErrors(sc, opts.inputPath)
     runWithGroupedErrors(sc, opts.inputPath)
@@ -40,21 +43,23 @@ object SampleApp extends StrictLogging {
 
   def runWithoutErrors(
       sc: SparkContext,
-      inputPath: String)(implicit parserGenerator: () => SamplePersonParser): Unit = {
-    implicit val impl = parserGenerator()
+      inputPath: String)(implicit parserGenerator: () => Parser[String, SamplePerson]): Unit = {
+    import com.avira.ds.sparser.spark.SparserSpark.ParserGeneratorRDDFunctions
 
     val input = sc.textFile(inputPath)
     val persons = input.parse
 
     val l_persons = persons.collect()
 
-    logger.info("Parsed values without errors:")
+    logger.info("*** Parsed values without errors:")
     l_persons.foreach(x => logger.info(x.toString))
   }
 
   def runWithGroupedErrors(
       sc: SparkContext,
-      inputPath: String)(implicit parserGenerator: () => SamplePersonParser): Unit = {
+      inputPath: String)(implicit parser: Parser[String, SamplePerson]): Unit = {
+    import com.avira.ds.sparser.spark.SparserSpark.ParserRDDFunctions
+
     val input = sc.textFile(inputPath)
     val results = input.parseWithErrors
 
@@ -66,13 +71,16 @@ object SampleApp extends StrictLogging {
 
     val l_groupedErrors = groupedErrors.collect()
 
-    logger.warn("Grouped errors:")
+    logger.warn("*** Grouped errors:")
     l_groupedErrors.foreach(x => logger.warn(x.toString()))
   }
 
   def runWithExplodedErrors(
       sc: SparkContext,
-      inputPath: String)(implicit parserGenerator: () => SamplePersonParser): Unit = {
+      inputPath: String)
+      (implicit parserBroadcast: Broadcast[Parser[String, SamplePerson]]): Unit = {
+    import com.avira.ds.sparser.spark.SparserSpark.ParserBroadcastRDDFunctions
+
     val input = sc.textFile(inputPath)
     val results = input.parseWithErrors
 
@@ -84,12 +92,12 @@ object SampleApp extends StrictLogging {
 
     val l_explodedErrors = explodedErrors.collect()
 
-    logger.warn("Exploded errors:")
+    logger.warn("*** Exploded errors:")
     l_explodedErrors.foreach(x => logger.warn(x.toString()))
   }
 
   def printErrorsReport(parserAccumulators: ParserAccumulators): Unit = {
-    logger.info("Errors report:")
+    logger.info("*** Errors report:")
 
     parserAccumulators.accumulators.foreach { acc =>
       logger.info(s"\t${acc.name.get}=${acc.value}")
