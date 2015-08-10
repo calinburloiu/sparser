@@ -1,11 +1,17 @@
 package com.avira.ds.sparser
 
+import com.avira.ds.MacroUtils
 import com.avira.ds.sparser.FieldMatch._
 import org.scalatest.WordSpec
 
 case class Xx(x1: String, xMore: Option[Yy])
 case class Yy(y1: Int, y2: String, yMore: Seq[Zz])
 case class Zz(z1: Float)
+
+sealed trait ParentTrait
+case class TraitChildA(x: Int) extends ParentTrait
+case class TraitChildB(y: String) extends ParentTrait
+case object TraitChildC extends ParentTrait
 
 class MacrosSuite extends WordSpec {
 
@@ -32,6 +38,15 @@ class MacrosSuite extends WordSpec {
         val fm = FieldMatch[Xx]({ xx: Xx => xx.xMore.get.yMore(1).z1 }, "value")
         assert(fm.fieldName == "xMore.get.yMore(1).z1")
       }
+    }
+  }
+
+  "getSealedClassChildren" should {
+    "get all subclasses of SamplePersonParseError" in {
+      val classes = MacroUtils.getSealedClassChildren[ParentTrait]
+      assert(classes.contains(classOf[TraitChildA]))
+      assert(classes.contains(classOf[TraitChildB]))
+      assert(classes.contains(TraitChildC.getClass))
     }
   }
 }

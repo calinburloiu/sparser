@@ -23,14 +23,14 @@ class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] 
         "age" -> -1
       ),
       ExpectedErrors(
-        "age.invalid"
+        classOf[SamplePersonParser.InvalidAgeParseError]
       )
     ),
     ParserTest("Bad input",
       "Burloiu",
       ExpectedNoValue,
       ExpectedErrors(
-        "columns.notEnough"
+        classOf[SamplePersonParser.NotEnoughColumnsParseError]
       )
     )
   )

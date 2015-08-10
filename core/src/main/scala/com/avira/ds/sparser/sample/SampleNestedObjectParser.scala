@@ -1,6 +1,8 @@
 package com.avira.ds.sparser.sample
 
+import com.avira.ds.MacroUtils
 import com.avira.ds.sparser._
+import com.avira.ds.sparser.sample.SampleNestedObjectParser.{InvalidNumbersParseError, NotEnoughColumnsParseError, TooManyColumnsParseError}
 
 import scala.util.{Failure, Success, Try}
 
@@ -23,9 +25,9 @@ class SampleNestedObjectParser extends Parser[String, NestedObject] {
       cols match {
         case Array(a, b, c) => TransformSuccess((a, b, c))
         case Array(a, b, c, _*) => TransformWarning((a, b, c),
-            ParseError("columns.tooMany", Some("Too many columns"), cols.length))
+          TooManyColumnsParseError(cols.length))
         case _ => TransformFailure(
-            ParseError("columns.notEnough", Some("Insufficient columns"), cols.length))
+          NotEnoughColumnsParseError(cols.length))
       }
     }
 
@@ -33,11 +35,32 @@ class SampleNestedObjectParser extends Parser[String, NestedObject] {
       val ratioSplits = cRaw.split(":")
       ratioSplits match {
         case Array(xRaw, yRaw) => Try(Ratio(xRaw.toInt, yRaw.toInt)) match {
-          case Failure(e) => TransformFailure(ParseError("numbers.invalid",
-              Some("At least one of the numbers in Ratio is invalid"), e))
           case Success(c) => TransformSuccess(NestedObject(a, b, c))
+          case Failure(e: NumberFormatException) => TransformFailure(InvalidNumbersParseError(e))
+          case Failure(e) => throw new RuntimeException(e)
         }
       }
     }
   }
+}
+
+object SampleNestedObjectParser {
+
+  sealed abstract class SampleNestedObjectParseError(
+      override val message: Option[String],
+      override val args: Seq[Any]) extends ParseError
+
+  case class TooManyColumnsParseError(colsCount: Int)
+      extends SampleNestedObjectParseError(Some("Too many columns"), Seq(colsCount))
+
+  case class NotEnoughColumnsParseError(colsCount: Int)
+      extends SampleNestedObjectParseError(Some("Insufficient columns"), Seq(colsCount))
+
+  case class InvalidNumbersParseError(e: NumberFormatException)
+      extends SampleNestedObjectParseError(
+        Some("At least one of the numbers in Ratio is invalid"), Seq(e))
+
+  def parseErrorClasses: Set[Class[_ <: ParseError]] =
+    MacroUtils.getSealedClassChildren[SampleNestedObjectParseError]
+        .asInstanceOf[Set[Class[_ <: ParseError]]]
 }
