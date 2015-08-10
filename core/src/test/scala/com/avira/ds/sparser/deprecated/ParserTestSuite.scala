@@ -1,6 +1,6 @@
 package com.avira.ds.sparser.deprecated
 
-import com.avira.ds.sparser.{ParseResult, Parser}
+import com.avira.ds.sparser.{ParseError, ParseResult, Parser}
 import org.scalatest.WordSpec
 
 import scala.reflect.ClassTag
@@ -21,7 +21,7 @@ abstract class ParserTestSuite[I, O: ru.TypeTag : ClassTag] extends WordSpec {
     for (test <- tests) {
       s"""Parsing input "${test.name}"""" should {
         val ParseResult(actualValueOption, errors, _) = parser.parse(test.input)
-        val errorNames = errors.map(_.name).toSet
+        val errorClasses = errors.map(_.getClass).toSet
 
         // Check field values.
         actualValueOption.foreach { actualValue =>
@@ -33,9 +33,9 @@ abstract class ParserTestSuite[I, O: ru.TypeTag : ClassTag] extends WordSpec {
         }
 
         // Check errors.
-        for (expectedErrorName <- test.expectedErrors.errorNames) {
-          s"""report error "$expectedErrorName"""" in {
-            assert(errorNames.contains(expectedErrorName))
+        for (expectedErrorClass <- test.expectedErrors.errorClasses) {
+          s"""report error "${expectedErrorClass.getCanonicalName}"""" in {
+            assert(errorClasses.contains(expectedErrorClass))
           }
         }
       }
@@ -74,4 +74,4 @@ case class ExpectedValue(override val fields: (String, Any)*) extends ExpectedVa
 
 
 @deprecated
-case class ExpectedErrors(errorNames: String*)
+case class ExpectedErrors(errorClasses: Class[_ <: ParseError]*)

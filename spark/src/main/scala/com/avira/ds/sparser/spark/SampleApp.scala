@@ -21,13 +21,11 @@ object SampleApp extends StrictLogging {
     lazy val conf = new SparkConf()
     lazy val sc = new SparkContext(conf)
 
-    val parserAccumulators = ParserAccumulators(sc)
+    val parserAccumulators = new ParserAccumulators(sc, SamplePersonParser.parseErrorClasses)
 
     val parserConf: ParserConf = ParserConf(
       errorCallback = parserAccumulators.createAccumulatorsParserCallback,
-      shouldCollectInput = opts.shouldCollectInput,
-      shouldCollectErrorMessages = opts.shouldCollectErrorMessages,
-      shouldCollectErrorArgs = opts.shouldCollectErrorArgs
+      shouldCollectInput = opts.shouldCollectInput
     )
     implicit val parserGenerator: () => Parser[String, SamplePerson] = { () =>
       new SamplePersonParser(parserConf)
@@ -99,8 +97,8 @@ object SampleApp extends StrictLogging {
   def printErrorsReport(parserAccumulators: ParserAccumulators): Unit = {
     logger.info("*** Errors report:")
 
-    parserAccumulators.accumulators.foreach { acc =>
-      logger.info(s"\t${acc.name.get}=${acc.value}")
+    parserAccumulators.accumulators.foreach { case (name, acc) =>
+      logger.info(s"\t$name=${acc.value}")
     }
   }
 }

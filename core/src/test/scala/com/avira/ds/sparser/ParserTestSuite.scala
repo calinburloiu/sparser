@@ -1,5 +1,6 @@
 package com.avira.ds.sparser
 
+import com.avira.ds.sparser.sample.SamplePersonParser
 import org.scalatest.WordSpec
 
 abstract class ParserTestSuite[I, O] extends WordSpec {
@@ -13,7 +14,7 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
 
     s"""Parsing input "$name"""" should {
       val ParseResult(actualValueOption, errors, _) = parser.parse(input)
-      val errorNames = errors.map(_.name).toSet
+      val errorClasses = errors.map(_.getClass).toSet
 
       // Check field values.
       actualValueOption.foreach { actualValue =>
@@ -35,12 +36,16 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
       }
 
       // Check errors.
-      for (expectedErrorName <- expectedResult.expectedErrors.errorNames) {
-        s"""report error "$expectedErrorName"""" in {
-          assert(errorNames.contains(expectedErrorName))
+      for (expectedErrorClass <- expectedResult.expectedErrors.errorClasses) {
+        s"""report error "${expectedErrorClass.getCanonicalName}"""" in {
+          assert(errorClasses.contains(expectedErrorClass))
         }
       }
     }
+
+    val s = Seq(classOf[SamplePersonParser.InvalidAgeParseError], classOf[ParseError])
+    val x = ExpectedErrors(classOf[SamplePersonParser.InvalidAgeParseError], classOf[ParseError])
+    val y = x.errorClasses
   }
 }
 
@@ -65,6 +70,6 @@ case class ExpectedFailureResult[O](
 
 case class ExpectedValue[O](fieldValues: FieldMatch[O]*)
 
-case class ExpectedErrors(errorNames: String*)
+case class ExpectedErrors(errorClasses: Class[_ <: ParseError]*)
 
 

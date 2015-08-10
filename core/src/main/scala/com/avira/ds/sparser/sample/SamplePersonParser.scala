@@ -1,6 +1,8 @@
 package com.avira.ds.sparser.sample
 
+import com.avira.ds.MacroUtils
 import com.avira.ds.sparser._
+import com.avira.ds.sparser.sample.SamplePersonParser.{NotEnoughColumnsParseError, TooManyColumnsParseError, InvalidAgeParseError}
 
 import scala.util.{Failure, Success, Try}
 
@@ -18,13 +20,13 @@ class SamplePersonParser(override val conf: ParserConf)
       cols.length match {
         case x: Int if x < 2 =>
           TransformFailure(
-            ParseError("columns.notEnough", Some("Insufficient columns"), cols.length)
+            NotEnoughColumnsParseError(cols.length)
           )
         case x: Int if x > 2 =>
           val (rawName, rawAge) = (cols(0), cols(1))
           TransformWarning(
             (rawName, rawAge),
-            ParseError("columns.tooMany", Some("Too many columns"), cols.length)
+            TooManyColumnsParseError(cols.length)
           )
         case x: Int =>
           val Array(rawName, rawAge) = cols
@@ -40,13 +42,32 @@ class SamplePersonParser(override val conf: ParserConf)
           TransformSuccess(
             SamplePerson(rawName, age)
           )
-        case Failure(e) =>
+        case Failure(e: NumberFormatException) =>
           TransformWarning(
             SamplePerson(rawName, -1),
-            ParseError("age.invalid", Some(s"Invalid age $rawAge"), e)
+            InvalidAgeParseError(rawAge, e)
           )
       }
     }
   }
+}
 
+object SamplePersonParser {
+
+  sealed abstract class SamplePersonParseError(
+      override val message: Option[String],
+      override val args: Seq[Any]) extends ParseError
+
+  case class InvalidAgeParseError(rawAge: String, e: NumberFormatException)
+      extends SamplePersonParseError(Some(s"Invalid age $rawAge"), Seq(e))
+
+  case class TooManyColumnsParseError(colsCount: Int)
+      extends SamplePersonParseError(Some("Too many columns"), Seq(colsCount))
+
+  case class NotEnoughColumnsParseError(colsCount: Int)
+      extends SamplePersonParseError(Some("Insufficient columns"), Seq(colsCount))
+
+  def parseErrorClasses: Set[Class[_ <: ParseError]] =
+    MacroUtils.getSealedClassChildren[SamplePersonParseError]
+       .asInstanceOf[Set[Class[_ <: ParseError]]]
 }

@@ -1,8 +1,11 @@
 package com.avira.ds.sparser.sample
 
 import com.avira.ds.sparser._
+import com.avira.ds.sparser.sample.SamplePersonParser.SamplePersonParseError
 
-class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] {
+class SamplePersonParserTestSuite
+    extends ParserTestSuite[String, SamplePerson] {
+
   override lazy val parser: Parser[String, SamplePerson] = new SamplePersonParser(ParserConf())
 
   ParserTest("Good",
@@ -30,7 +33,7 @@ class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] 
         FieldMatch(_.age, -1)
       ),
       ExpectedErrors(
-        "age.invalid"
+        classOf[SamplePersonParser.InvalidAgeParseError]
       )
     )
   )
@@ -39,7 +42,7 @@ class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] 
     "Burloiu",
     ExpectedFailureResult(
       ExpectedErrors(
-        "columns.notEnough"
+        classOf[SamplePersonParser.NotEnoughColumnsParseError]
       )
     )
   )

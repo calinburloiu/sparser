@@ -1,5 +1,10 @@
 package com.avira.ds.sparser
 
+import com.avira.ds.MacroUtils
+
+import scala.reflect.ClassTag
+import scala.reflect.runtime.{universe => ru}
+
 /**
  * Classes of this trait should be able to transform input text (like a log line) into a
  * structured object value by using `parse` method.
@@ -51,14 +56,10 @@ trait Parser[I, +O] extends Serializable {
  *
  * @param errorCallback a side effect function to be called each time an error occurs
  * @param shouldCollectInput whether to collect the input into each [[ParseResult]]
- * @param shouldCollectErrorMessages whether to collect verbose messages into each [[ParseError]]
- * @param shouldCollectErrorArgs whether to collect tracking args into each [[ParseError]]
  */
 case class ParserConf(
     errorCallback: ParseError => Unit = { e: ParseError => () },
-    shouldCollectInput: Boolean = true,
-    shouldCollectErrorMessages: Boolean = true,
-    shouldCollectErrorArgs: Boolean = true) extends Serializable
+    shouldCollectInput: Boolean = true) extends Serializable
 
 // TODO Doc missing params
 /**
@@ -116,7 +117,7 @@ sealed abstract class ParseResult[I, +O](
    */
   def reportError(error: ParseError): ParseResult[I, O] = {
     conf.errorCallback(error)
-    Failure(errors :+ error.strip, input)
+    Failure(errors :+ error, input)
   }
 
   /**
@@ -128,7 +129,7 @@ sealed abstract class ParseResult[I, +O](
    */
   def fillValueAndReportError[OO](newValue: OO, error: ParseError): ParseResult[I, OO] = {
     conf.errorCallback(error)
-    Warning(newValue, errors :+ error.strip, input)
+    Warning(newValue, errors :+ error, input)
   }
 }
 
@@ -174,34 +175,16 @@ case class TransformSuccess[T](value: T) extends TransformResult[T]
  * Class which abstracts an error returned by a [[Parser]] implementation.
  *
  * You may extend this class for specific errors
- * @param name short name which identifies the error (e.g. "age.invalidNumber")
  * @param message a more detailed description of the error
  *                (e.g. "Invalid age xyz, you should provide a positive integer")
  * @param args sequence of object which might help while debugging the error
  */
-class ParseError(
-    val name: String,
-    val message: Option[String],
-    val args: Seq[Any]) extends Serializable {
+trait ParseError extends Serializable {
 
-  /**
-   * Make a copy of this error without the message and/or args if [[ParserConf]] is set to do so.
-   *
-   * If [[ParserConf.shouldCollectErrorMessages]] is false a new [[ParseError]] is returned with
-   * None as message. If [[ParserConf.shouldCollectErrorArgs]] is false a new [[ParseError]] is
-   * returned with and empty list of args.
-   * @param conf a configuration object which specifies if message and/or args needs to be stripped
-   * @return
-   */
-  def strip(implicit conf: ParserConf): ParseError = {
-    if (conf.shouldCollectErrorMessages && conf.shouldCollectErrorArgs) {
-      this
-    } else {
-      val strippedMessage = if (conf.shouldCollectErrorMessages) message else None
-      val strippedArgs = if (conf.shouldCollectErrorArgs) args else Seq()
-      new ParseError(name, strippedMessage, strippedArgs)
-    }
-  }
+  val message: Option[String]
+  val args: Seq[Any]
+
+  def name: String = this.getClass.getCanonicalName
 
   def canEqual(other: Any): Boolean = other match {
     case _: ParseError => true
@@ -226,12 +209,13 @@ class ParseError(
 }
 
 object ParseError {
-  def apply(name: String, message: Option[String], args: Any*): ParseError = new ParseError(
-      name, message, args)
 
-  def apply(name: String): ParseError = new ParseError(name, None, Seq())
-
-  def unapply(error: ParseError): Option[(String, Option[String], Seq[Any])] = Some(
-    (error.name, error.message, error.args)
-  )
+//  def apply(name: String, message: Option[String], args: Any*): ParseError = new ParseError(
+//      name, message, args)
+//
+//  def apply(name: String): ParseError = new ParseError(name, None, Seq())
+//
+//  def unapply(error: ParseError): Option[(String, Option[String], Seq[Any])] = Some(
+//    (error.name, error.message, error.args)
+//  )
 }
