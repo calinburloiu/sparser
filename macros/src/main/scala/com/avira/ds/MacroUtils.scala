@@ -4,10 +4,21 @@ import scala.annotation.tailrec
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
+/**
+ * Various helper macros.
+ */
 object MacroUtils {
 
+  /**
+   * Return a Set of all classes which inherit the sealed class or trait passed.
+   * @tparam C parent sealed class or trait
+   * @return children classes
+   */
   def getSealedClassChildren[C]: Set[Class[_]] = macro getSealedClassChildrenImpl[C]
 
+  /**
+   * Macro implementation of [[MacroUtils.getSealedClassChildren]].
+   */
   def getSealedClassChildrenImpl[C: c.WeakTypeTag](c: Context): c.Expr[Set[Class[_]]] = {
     import c.universe._
 
@@ -46,6 +57,17 @@ object MacroUtils {
     }
   }
 
+  /**
+   * Convert a Symbol object to a FQN class String which can be used to create a
+   * [[java.lang.Class]] object.
+   *
+   * In order to be able to load a class, the name requires $ separator between classes and
+   * subclasses and an extra $ at the end if the symbol represent a Scala object. rawName contains
+   * only dots like in code.
+   * @param c [[Context]] from the macro implementation
+   * @param symbol class Symbol
+   * @return FQN class name String
+   */
   private def symbolToClassName(c: Context)(symbol: c.universe.Symbol): String = {
     @tailrec
     def fixForSubclasses(acc: String, components: List[String]): String = components match {
@@ -56,10 +78,6 @@ object MacroUtils {
         fixForSubclasses(acc + x + ".", xs)
     }
 
-    /* In order to be able to load a class, the name requires $ separator between classes and
-    subclasses and an extra $ at the end if the symbol represent a Scala object. rawName contains
-    only dots like in code.
-     */
     val rawName = symbol.asClass.fullName
     val nameWithSubclassesFixed = fixForSubclasses("", rawName.split("[.]").toList)
 
