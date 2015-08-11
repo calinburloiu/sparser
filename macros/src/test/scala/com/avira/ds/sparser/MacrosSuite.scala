@@ -8,11 +8,6 @@ case class Xx(x1: String, xMore: Option[Yy])
 case class Yy(y1: Int, y2: String, yMore: Seq[Zz])
 case class Zz(z1: Float)
 
-sealed trait ParentTrait
-case class TraitChildA(x: Int) extends ParentTrait
-case class TraitChildB(y: String) extends ParentTrait
-case object TraitChildC extends ParentTrait
-
 class MacrosSuite extends WordSpec {
 
   "selectFieldToString" should {
@@ -43,10 +38,9 @@ class MacrosSuite extends WordSpec {
 
   "getSealedClassChildren" should {
     "get all subclasses of SamplePersonParseError" in {
-      val classes = MacroUtils.getSealedClassChildren[ParentTrait]
-      assert(classes.contains(classOf[TraitChildA]))
-      assert(classes.contains(classOf[TraitChildB]))
-      assert(classes.contains(TraitChildC.getClass))
+        val classes = MacroUtils.getSealedClassChildren[Option[String]]
+        assert(classes.contains(classOf[Some[String]]))
+        assert(classes.contains(None.getClass))
     }
   }
 }

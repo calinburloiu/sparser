@@ -1,6 +1,6 @@
 package com.avira.ds.sparser
 
-import com.avira.ds.sparser.sample.SamplePersonParser
+import com.avira.ds.sparser.samples.SamplePersonParser
 import org.scalatest.WordSpec
 
 abstract class ParserTestSuite[I, O] extends WordSpec {

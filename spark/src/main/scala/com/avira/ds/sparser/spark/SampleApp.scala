@@ -1,7 +1,7 @@
 package com.avira.ds.sparser.spark
 
 import com.avira.ds.sparser._
-import com.avira.ds.sparser.sample.{SamplePerson, SamplePersonParser}
+import com.avira.ds.sparser.samples.{SamplePerson, SamplePersonParser}
 import com.typesafe.scalalogging.slf4j.StrictLogging
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.{SparkConf, SparkContext}
@@ -13,9 +13,7 @@ object SampleApp extends StrictLogging {
   def main(args: Array[String]): Unit = {
     val opts = Options(
       inputPath = args(0),
-      shouldCollectInput = Try(args(1).toBoolean).getOrElse(true),
-      shouldCollectErrorMessages = Try(args(2).toBoolean).getOrElse(true),
-      shouldCollectErrorArgs = Try(args(3).toBoolean).getOrElse(true)
+      shouldCollectInput = Try(args(1).toBoolean).getOrElse(true)
     )
 
     lazy val conf = new SparkConf()
@@ -105,6 +103,4 @@ object SampleApp extends StrictLogging {
 
 case class Options(
     inputPath: String,
-    shouldCollectInput: Boolean,
-    shouldCollectErrorMessages: Boolean,
-    shouldCollectErrorArgs: Boolean) extends Serializable
+    shouldCollectInput: Boolean) extends Serializable

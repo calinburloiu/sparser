@@ -1,7 +1,7 @@
 package com.avira.ds.sparser.deprecated
 
 import com.avira.ds.sparser.{Parser, ParserConf}
-import com.avira.ds.sparser.sample.{SamplePerson, SamplePersonParser}
+import com.avira.ds.sparser.samples.{SamplePerson, SamplePersonParser}
 
 @deprecated
 class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] {

@@ -1,8 +1,8 @@
-package com.avira.ds.sparser.sample
+package com.avira.ds.sparser.samples
 
 import com.avira.ds.MacroUtils
 import com.avira.ds.sparser._
-import com.avira.ds.sparser.sample.SampleNestedObjectParser.{InvalidNumbersParseError, NotEnoughColumnsParseError, TooManyColumnsParseError}
+import com.avira.ds.sparser.samples.SampleNestedObjectParser.{InvalidNumbersParseError, NotEnoughColumnsParseError, TooManyColumnsParseError}
 
 import scala.util.{Failure, Success, Try}
 

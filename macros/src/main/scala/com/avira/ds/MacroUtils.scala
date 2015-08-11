@@ -1,5 +1,6 @@
 package com.avira.ds
 
+import scala.annotation.tailrec
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
@@ -24,22 +25,7 @@ object MacroUtils {
       )
     } else {
       val childrenNames = symbol.asClass.knownDirectSubclasses.toList.map { sym =>
-//        TypeApply(
-//          Select(
-//            reify(classOf).tree,
-//            newTermName("apply")
-//          ),
-//          List(
-//            TypeTree(typeOf[String])
-//          )
-//        )
-        val className =
-          if (sym.isModuleClass) {
-            sym.asClass.fullName + "$"
-          } else {
-            sym.asClass.fullName
-          }
-        Literal(Constant(className))
+        Literal(Constant(symbolToClassName(c)(sym)))
       }
 
       val childrenClasses = childrenNames.map { child =>
@@ -57,6 +43,30 @@ object MacroUtils {
           childrenClasses
         )
       }
+    }
+  }
+
+  private def symbolToClassName(c: Context)(symbol: c.universe.Symbol): String = {
+    @tailrec
+    def fixForSubclasses(acc: String, components: List[String]): String = components match {
+      case x0 :: x1 :: xs if x0(0).isUpper =>
+        fixForSubclasses(acc + x0 + "$", x1 :: xs)
+      case x :: Nil => acc + x
+      case x :: xs =>
+        fixForSubclasses(acc + x + ".", xs)
+    }
+
+    /* In order to be able to load a class, the name requires $ separator between classes and
+    subclasses and an extra $ at the end if the symbol represent a Scala object. rawName contains
+    only dots like in code.
+     */
+    val rawName = symbol.asClass.fullName
+    val nameWithSubclassesFixed = fixForSubclasses("", rawName.split("[.]").toList)
+
+    if (symbol.isModuleClass) {
+      nameWithSubclassesFixed + "$"
+    } else {
+      nameWithSubclassesFixed
     }
   }
 }

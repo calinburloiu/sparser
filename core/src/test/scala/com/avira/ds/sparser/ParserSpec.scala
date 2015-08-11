@@ -1,6 +1,7 @@
 package com.avira.ds.sparser
 
-import com.avira.ds.sparser.sample.{SamplePerson, SamplePersonParser}
+import com.avira.ds.sparser.samples.SamplePersonParser.{NotEnoughColumnsParseError, TooManyColumnsParseError, InvalidAgeParseError}
+import com.avira.ds.sparser.samples.{SamplePerson, SamplePersonParser}
 import org.scalatest.WordSpec
 
 import scala.collection.mutable
@@ -165,6 +166,15 @@ class ParserSpec extends WordSpec {
       "have side effects and increment errorsCount" in {
         assert(errorsCount == 2)
       }
+    }
+  }
+
+  "Calling SamplePersonParser.parseErrorClasses" should {
+    "return a list of all ParseError classes that correspond to SamplePersonParser errors" in {
+      val classes = SamplePersonParser.parseErrorClasses
+      assert(classes contains classOf[InvalidAgeParseError])
+      assert(classes contains classOf[TooManyColumnsParseError])
+      assert(classes contains classOf[NotEnoughColumnsParseError])
     }
   }
 }

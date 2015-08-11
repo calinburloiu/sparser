@@ -1,4 +1,4 @@
-package com.avira.ds.sparser.sample
+package com.avira.ds.sparser.samples
 
 import com.avira.ds.sparser._
 

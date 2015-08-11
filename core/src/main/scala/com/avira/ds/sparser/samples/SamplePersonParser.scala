@@ -1,8 +1,8 @@
-package com.avira.ds.sparser.sample
+package com.avira.ds.sparser.samples
 
 import com.avira.ds.MacroUtils
 import com.avira.ds.sparser._
-import com.avira.ds.sparser.sample.SamplePersonParser.{NotEnoughColumnsParseError, TooManyColumnsParseError, InvalidAgeParseError}
+import com.avira.ds.sparser.samples.SamplePersonParser.{NotEnoughColumnsParseError, TooManyColumnsParseError, InvalidAgeParseError}
 
 import scala.util.{Failure, Success, Try}
 
