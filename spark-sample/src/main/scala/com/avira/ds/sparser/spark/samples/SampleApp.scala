@@ -1,7 +1,8 @@
-package com.avira.ds.sparser.spark
+package com.avira.ds.sparser.spark.samples
 
-import com.avira.ds.sparser._
 import com.avira.ds.sparser.samples.{SamplePerson, SamplePersonParser}
+import com.avira.ds.sparser.spark.ParserAccumulators
+import com.avira.ds.sparser.{ParseResult, Parser, ParserConf}
 import com.typesafe.scalalogging.slf4j.StrictLogging
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.{SparkConf, SparkContext}

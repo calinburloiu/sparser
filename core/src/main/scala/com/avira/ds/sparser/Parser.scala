@@ -1,10 +1,5 @@
 package com.avira.ds.sparser
 
-import com.avira.ds.MacroUtils
-
-import scala.reflect.ClassTag
-import scala.reflect.runtime.{universe => ru}
-
 /**
  * Classes of this trait should be able to transform input text (like a log line) into a
  * structured object value by using `parse` method.

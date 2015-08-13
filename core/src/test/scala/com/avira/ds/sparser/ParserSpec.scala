@@ -1,7 +1,7 @@
 package com.avira.ds.sparser
 
-import com.avira.ds.sparser.samples.SamplePersonParser.{NotEnoughColumnsParseError, TooManyColumnsParseError, InvalidAgeParseError}
 import com.avira.ds.sparser.samples.{SamplePerson, SamplePersonParser}
+import SamplePersonParser.{NotEnoughColumnsParseError, TooManyColumnsParseError, InvalidAgeParseError}
 import org.scalatest.WordSpec
 
 case class MyParseError(override val message: Option[String]) extends ParseError {

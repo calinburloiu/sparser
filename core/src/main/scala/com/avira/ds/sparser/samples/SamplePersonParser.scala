@@ -2,7 +2,6 @@ package com.avira.ds.sparser.samples
 
 import com.avira.ds.MacroUtils
 import com.avira.ds.sparser._
-import com.avira.ds.sparser.samples.SamplePersonParser.{NotEnoughColumnsParseError, TooManyColumnsParseError, InvalidAgeParseError}
 
 import scala.util.{Failure, Success, Try}
 
@@ -12,6 +11,7 @@ case class SamplePerson(
 
 class SamplePersonParser(override val conf: ParserConf)
     extends Parser[String, SamplePerson] {
+  import SamplePersonParser._
 
   override def parse(input: String): ParseResult[String, SamplePerson] = {
     val splitResult: ParseResult[String, (String, String)] = createResult(input, input)

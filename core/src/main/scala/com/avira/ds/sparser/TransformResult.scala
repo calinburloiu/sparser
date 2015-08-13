@@ -1,8 +1,5 @@
 package com.avira.ds.sparser
 
-/**
- * Created by calinburloiu on 13/08/15.
- */
 sealed trait TransformResult[+T]
 
 case class TransformSuccess[T](

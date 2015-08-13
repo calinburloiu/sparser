@@ -1,4 +1,4 @@
-package com.avira.ds.sparser
+package com.avira.ds.sparser.test
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context

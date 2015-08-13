@@ -1,8 +1,7 @@
-package com.avira.ds.sparser.samples
+package com.avira.ds.sparser.test
 
-import com.avira.ds.sparser._
-import com.avira.ds.sparser.samples.SamplePersonParser.SamplePersonParseError
-import com.avira.ds.sparser.test._
+import com.avira.ds.sparser.samples.{SamplePersonParser, SamplePerson}
+import com.avira.ds.sparser.{ParserConf, Parser}
 
 class SamplePersonParserTestSuite
     extends ParserTestSuite[String, SamplePerson] {

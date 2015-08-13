@@ -1,7 +1,6 @@
 package com.avira.ds.sparser.test
 
-import com.avira.ds.sparser._
-import com.avira.ds.sparser.samples.SamplePersonParser
+import com.avira.ds.sparser.{ParseError, ParseResult, Parser}
 import org.scalatest.WordSpec
 
 abstract class ParserTestSuite[I, O] extends WordSpec {
@@ -43,10 +42,6 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
         }
       }
     }
-
-    val s = Seq(classOf[SamplePersonParser.InvalidAgeParseError], classOf[ParseError])
-    val x = ExpectedErrors(classOf[SamplePersonParser.InvalidAgeParseError], classOf[ParseError])
-    val y = x.errorClasses
   }
 }
 

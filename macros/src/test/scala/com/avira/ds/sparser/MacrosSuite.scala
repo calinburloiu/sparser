@@ -1,7 +1,8 @@
 package com.avira.ds.sparser
 
 import com.avira.ds.MacroUtils
-import com.avira.ds.sparser.FieldMatch._
+import com.avira.ds.sparser.test.FieldMatch
+import com.avira.ds.sparser.test.FieldMatch._
 import org.scalatest.WordSpec
 
 case class Xx(x1: String, xMore: Option[Yy])
