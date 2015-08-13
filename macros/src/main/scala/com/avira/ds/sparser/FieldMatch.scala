@@ -3,17 +3,20 @@ package com.avira.ds.sparser
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
-/**
- * An instance of this class represents a matching rule in the Parser testing tool.
- *
- * A particular field value selected by `selectField` function must match the `expectedFieldValue`.
- *
- * The convenience apply method from the companion object will guess `fieldName` for you. Check it!
- * @param fieldName name of the field to match
- * @param selectField function which select the field from a result value object
- * @param expectedFieldValue expected value for the field
- * @tparam O type of the parser result value
- */
+/** An instance of this class represents a matching rule in the Parser testing
+  * tool.
+  *
+  * A particular field value selected by `selectField` function must match the
+  * `expectedFieldValue`.
+  *
+  * The convenience apply method from the companion object will guess
+  * `fieldName` for you. Check it!
+  *
+  * @param fieldName name of the field to match
+  * @param selectField function which select the field from a result value object
+  * @param expectedFieldValue expected value for the field
+  * @tparam O type of the parser result value
+  */
 case class FieldMatch[O](
     fieldName: String,
     selectField: O => Any,
@@ -21,18 +24,15 @@ case class FieldMatch[O](
 
 object FieldMatch {
 
-  /**
-   * Create a [[FieldMatch]] by guessing `fieldName` from `selectField`.
-   * @param selectField function which select the field from a result value object
-   * @param expectedFieldValue expected value for the field
-   * @tparam O type of the parser result value
-   * @return a [[FieldMatch result]]
-   */
+  /** Create a [[FieldMatch]] by guessing `fieldName` from `selectField`.
+    *
+    * @param selectField function which select the field from a result value object
+    * @param expectedFieldValue expected value for the field
+    * @tparam O type of the parser result value
+    * @return a [[FieldMatch result]]
+    */
   def apply[O](selectField: O => Any, expectedFieldValue: Any): FieldMatch[O] = macro applyImpl[O]
 
-  /**
-   * Macro implementation of [[FieldMatch.apply]].
-   */
   def applyImpl[O](c: Context)(
       selectField: c.Expr[O => Any],
       expectedFieldValue: c.Expr[Any]): c.Expr[FieldMatch[O]] = {
@@ -47,6 +47,7 @@ object FieldMatch {
     }
   }
 
+  /** Generate `fieldName` String from a `selectField` function. */
   def selectFieldToString[O](selectField: O => Any): String = macro selectFieldToStringImpl[O]
 
   def selectFieldToStringImpl[O](c: Context)(selectField: c.Expr[O => Any]): c.Expr[String] = {
@@ -71,3 +72,4 @@ object FieldMatch {
     reify { selectFieldBodyRepExpr.splice }
   }
 }
+

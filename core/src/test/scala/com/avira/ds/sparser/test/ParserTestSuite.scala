@@ -1,5 +1,6 @@
-package com.avira.ds.sparser
+package com.avira.ds.sparser.test
 
+import com.avira.ds.sparser._
 import com.avira.ds.sparser.samples.SamplePersonParser
 import org.scalatest.WordSpec
 
@@ -49,10 +50,9 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
   }
 }
 
-
 sealed abstract class ExpectedResult[O](
-  val expectedValueOption: Option[ExpectedValue[O]],
-  val expectedErrors: ExpectedErrors)
+    val expectedValueOption: Option[ExpectedValue[O]],
+    val expectedErrors: ExpectedErrors)
 
 case class ExpectedSuccessResult[O](
     expectedValue: ExpectedValue[O])
@@ -71,5 +71,3 @@ case class ExpectedFailureResult[O](
 case class ExpectedValue[O](fieldValues: FieldMatch[O]*)
 
 case class ExpectedErrors(errorClasses: Class[_ <: ParseError]*)
-
-

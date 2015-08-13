@@ -19,7 +19,7 @@ object SampleApp extends StrictLogging {
     lazy val conf = new SparkConf()
     lazy val sc = new SparkContext(conf)
 
-    val parserAccumulators = new ParserAccumulators(sc, SamplePersonParser.parseErrorClasses)
+    val parserAccumulators = ParserAccumulators(sc, SamplePersonParser.parseErrorClasses)
 
     val parserConf: ParserConf = ParserConf(
       errorCallback = parserAccumulators.createAccumulatorsParserCallback,
@@ -103,4 +103,5 @@ object SampleApp extends StrictLogging {
 
 case class Options(
     inputPath: String,
-    shouldCollectInput: Boolean) extends Serializable
+    shouldCollectInput: Boolean)
+  extends Serializable

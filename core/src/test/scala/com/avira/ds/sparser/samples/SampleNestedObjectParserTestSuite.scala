@@ -1,6 +1,7 @@
 package com.avira.ds.sparser.samples
 
 import com.avira.ds.sparser._
+import com.avira.ds.sparser.test.{ExpectedValue, ExpectedSuccessResult, ParserTestSuite}
 
 class SampleNestedObjectParserTestSuite extends ParserTestSuite[String, NestedObject] {
 
