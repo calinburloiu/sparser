@@ -9,7 +9,8 @@ case class Xx(x1: String, xMore: Option[Yy])
 case class Yy(y1: Int, y2: String, yMore: Seq[Zz])
 case class Zz(z1: Float)
 
-class MacrosSuite extends WordSpec {
+/** Test suite for testing macros. */
+class MacrosSpec extends WordSpec {
 
   "selectFieldToString" should {
     "convert to String a simple first-level field selector" in {
@@ -45,3 +46,4 @@ class MacrosSuite extends WordSpec {
     }
   }
 }
+

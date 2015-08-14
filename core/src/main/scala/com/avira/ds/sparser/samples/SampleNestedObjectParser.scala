@@ -17,9 +17,8 @@ case class Ratio(
 class SampleNestedObjectParser extends Parser[String, NestedObject] {
   import SampleNestedObjectParser._
 
-  override def parse(input: String): ParseResult[String, NestedObject] = {
-    val inputResult = createResult(input, input)
-
+  override def parse(
+      inputResult: ParseResult[String, String]): ParseResult[String, NestedObject] = {
     val columnsResult = inputResult.transform { line: String =>
       val cols = line.split("\t")
       cols match {

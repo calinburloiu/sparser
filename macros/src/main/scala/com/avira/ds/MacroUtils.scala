@@ -9,7 +9,7 @@ import scala.reflect.macros.Context
  */
 object MacroUtils {
 
-  /** Return a Set of all classes which inherit the sealed class or trait
+  /** Returns a Set of all classes which inherit the sealed class or trait
     * passed.
     *
     * @tparam C parent sealed class or trait
@@ -58,7 +58,7 @@ object MacroUtils {
     }
   }
 
-  /** Convert a Symbol object to a FQN class String which can be used to create
+  /** Converts a Symbol object to a FQN class String which can be used to create
     * a [[java.lang.Class]] object.
     *
     * In order to be able to load a class, the name requires $ separator between
