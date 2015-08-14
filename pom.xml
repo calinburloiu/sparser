@@ -117,6 +117,19 @@
 
   <repositories>
     <repository>
+      <id>central</id>
+      <!-- This should be at top, it makes maven try the central repo first and then others and hence faster dep resolution -->
+      <name>Maven Repository</name>
+      <url>https://repo1.maven.org/maven2</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+
+    <repository>
       <id>cloudera</id>
       <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
     </repository>
@@ -166,9 +179,14 @@
         <version>3.2.2</version>
 
         <configuration>
+          <scalaVersion>${scala.version}</scalaVersion>
           <recompileMode>incremental</recompileMode>
           <useZincServer>true</useZincServer>
-          <addScalacArgs>-deprecation</addScalacArgs>
+          <args>
+            <arg>-unchecked</arg>
+            <arg>-deprecation</arg>
+            <arg>-feature</arg>
+          </args>
         </configuration>
 
         <executions>
@@ -184,6 +202,12 @@
             <phase>process-test-resources</phase>
             <goals>
               <goal>testCompile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>doc-jar</goal>
             </goals>
           </execution>
         </executions>
@@ -224,7 +248,7 @@
         <configuration>
           <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
           <junitxml>.</junitxml>
-          <filereports>WDF TestSuite.txt</filereports>
+          <filereports>SparserTestSuite.txt</filereports>
         </configuration>
         <executions>
           <execution>
