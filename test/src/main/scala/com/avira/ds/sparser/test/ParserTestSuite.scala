@@ -56,11 +56,11 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
   /** Defines a test case for a particular input passed to the parser and the
     * expected outcome.
     *
-    * For each input you want to test define a [[ParserTestSuite#ParserTest]] instance inside your [[ParserTestSuite]] extended test class. Use a short descriptive name which should fit as ''<name>'' in phrase ''Parsing input "<name>" should extract field "<field>"''. To define the expected outcome for the input use one of the case classes of [[ExpectedResult]] as follows:
-    *
-    *  - [[ExpectedSuccessResult]]: to define a list of expected field values via [[ExpectedValue]] object;
-    *  - [[ExpectedWarningResult]]: to define a list of expected field values (via [[ExpectedValue]] object) and a list of expected `ParseError` classes (via [[ExpectedErrors]] object);
-    *  - [[ExpectedFailureResult]]: to define a list of expected `ParseError` classes (via [[ExpectedErrors]] object).
+    * For each input you want to test define a [[ParserTestSuite#ParserTest]]
+    * instance inside your [[ParserTestSuite]] extended test class. Use a short
+    * descriptive name which should fit as ''<name>'' in phrase ''Parsing input
+    * "<name>" should extract field "<field>"''. To define the expected outcome
+    * for the input use one of the case classes of [[ExpectedResult]].
     *
     * @param name Short and descriptive name of the test case which will be
     * printed by ScalaTest when running the test suite
@@ -107,25 +107,75 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
   }
 }
 
+/** Defines the expected outcome of a [[ParserTestSuite#ParserTest]], which
+  * tests a particular parser for a particular input.
+  *
+  * Normally, you shouldn't manipulate this abstract class directly, as it is
+  * only used internally, when you define a `ParserTest` use one of the case
+  * classes which inherits from `this`:
+  *
+  *  - [[ExpectedSuccessResult]]: to define the result of a successful parsing
+  *  operation as a list of expected field values via ([[ExpectedValue]]
+  *  object);
+  *  - [[ExpectedWarningResult]]: to define the result of a partially
+  *  successful parsing operation, which encountered some errors, as a list of
+  *  expected field values (via [[ExpectedValue]] object) and a list of
+  *  expected `ParseError` classes (via [[ExpectedErrors]] object);
+  *  - [[ExpectedFailureResult]]: to define the result of a failed parsing
+  *  operation as a list of expected `ParseError` classes (via
+  *  [[ExpectedErrors]] object).
+  *
+  * @tparam O Output value type of the parser tested
+  * @see [[ParserTestSuite]], [[ParserTestSuite#ParserTest]]
+  */
 sealed abstract class ExpectedResult[O](
     val expectedValueOption: Option[ExpectedValue[O]],
     val expectedErrors: ExpectedErrors)
 
+/** Defines the result of a successful parsing operation as a list of expected
+  * field values via [[ExpectedValue]] object.
+  *
+  * @tparam O Output value type of the parser tested
+  * @see [[ParserTestSuite]], [[ParserTestSuite#ParserTest]]
+  */
 case class ExpectedSuccessResult[O](
     expectedValue: ExpectedValue[O])
   extends ExpectedResult[O](Some(expectedValue), ExpectedErrors())
 
+/** Defines the result of a partially successful parsing operation, which
+  * encountered some errors, as a list of expected field values via
+  * [[ExpectedValue]] object and a list of expected `ParseError` classes via
+  * [[ExpectedErrors]] object.
+  *
+  * @tparam O Output value type of the parser tested
+  * @see [[ParserTestSuite]], [[ParserTestSuite#ParserTest]]
+  */
 case class ExpectedWarningResult[O](
     expectedValue: ExpectedValue[O],
     override val expectedErrors: ExpectedErrors)
   extends ExpectedResult[O](Some(expectedValue), expectedErrors)
 
+/** Defines the result of a failed parsing operation as a list of expected
+  * `ParseError` classes via [[ExpectedErrors]] object.
+  *
+  * @tparam O Output value type of the parser tested
+  * @see [[ParserTestSuite]], [[ParserTestSuite#ParserTest]]
+  */
 case class ExpectedFailureResult[O](
     override val expectedErrors: ExpectedErrors)
   extends ExpectedResult[O](None, expectedErrors)
 
 
+/** Defines a list of expected field values in an [[ExpectedResult]].
+  *
+  * @see [[ExpectedResult]] and `com.avira.ds.sparser.test.FieldMatch` from
+  * ''sparser-macros'' module.
+  */
 case class ExpectedValue[O](fieldValues: FieldMatch[O]*)
 
+/** Defines a list of expected errors returned while parsing an input,
+  * as`com.avira.ds.sparser.ParseError` classes.
+  *
+  * @see [[ExpectedResult]]
+  */
 case class ExpectedErrors(errorClasses: Class[_ <: ParseError]*)
-

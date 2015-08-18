@@ -3,6 +3,7 @@ package com.avira.ds.sparser.test
 import com.avira.ds.sparser.samples.{SamplePersonParser, SamplePerson}
 import com.avira.ds.sparser.{ParserConf, Parser}
 
+/** Test suite example for [[com.avira.ds.sparser.samples.SamplePersonParser]]. */
 class SamplePersonParserTestSuite
     extends ParserTestSuite[String, SamplePerson] {
 

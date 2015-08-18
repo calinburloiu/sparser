@@ -3,6 +3,7 @@ package com.avira.ds.sparser.test
 import com.avira.ds.sparser.Parser
 import com.avira.ds.sparser.samples.{SampleNestedObjectParser, NestedObject}
 
+/** Test suite example for [[com.avira.ds.sparser.samples.SampleNestedObjectParser]]. */
 class SampleNestedObjectParserTestSuite extends ParserTestSuite[String, NestedObject] {
 
   override lazy val parser: Parser[String, NestedObject] = new SampleNestedObjectParser
