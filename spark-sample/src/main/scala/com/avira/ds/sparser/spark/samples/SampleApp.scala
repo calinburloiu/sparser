@@ -55,7 +55,7 @@ object SampleApp extends StrictLogging {
   def runWithGroupedErrors(
       sc: SparkContext,
       inputPath: String)(implicit parser: Parser[String, SamplePerson]): Unit = {
-    import com.avira.ds.sparser.spark.SparserSpark.ParserRDDFunctions
+    import com.avira.ds.sparser.spark.SparserSpark.ParserSimpleRDDFunctions
 
     val input = sc.textFile(inputPath)
     val results = input.parseWithErrors
