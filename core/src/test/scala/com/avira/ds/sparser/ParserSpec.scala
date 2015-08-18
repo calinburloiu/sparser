@@ -8,6 +8,7 @@ case class MyParseError(override val message: Option[String]) extends ParseError
   override val args: Seq[Any] = Seq()
 }
 
+/** Integration test for a [[Parser]] sample implementation, [[SamplePersonParser]] */
 class ParserSpec extends WordSpec {
 
   "A SamplePersonParser" when {

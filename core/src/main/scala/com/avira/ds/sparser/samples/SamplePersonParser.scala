@@ -5,10 +5,23 @@ import com.avira.ds.sparser._
 
 import scala.util.{Failure, Success, Try}
 
+/** Sample case class description a person used as the output value of
+  * [[SamplePersonParser]].
+  *
+  * @param name Name of the person
+  * @param age Age of the person
+  */
 case class SamplePerson(
     name: String,
     age: Int)
 
+/** Sample parser implemented to show how trait [[com.avira.ds.sparser.Parser]] should be
+  * implemented for simple TSV input.
+  *
+  * Check [[com.avira.ds.sparser.Parser]] for a usage example.
+  * 
+  * @param conf a [[com.avira.ds.sparser.ParserConf]] instance.
+  */
 class SamplePersonParser(override val conf: ParserConf)
     extends Parser[String, SamplePerson] {
   import SamplePersonParser._
@@ -16,6 +29,7 @@ class SamplePersonParser(override val conf: ParserConf)
   override def parse(
       inputResult: ParseResult[String, String]): ParseResult[String, SamplePerson] = {
     val splitResult: ParseResult[String, (String, String)] =
+      // Split the TSV row into columns.
       inputResult.transform { line: String =>
         val cols = line.split("\t")
         cols.length match {
@@ -37,6 +51,7 @@ class SamplePersonParser(override val conf: ParserConf)
         }
       }
 
+    // Parse the age value.
     splitResult.transform {
       case (rawName, rawAge) => Try(rawAge.toInt) match {
         case Success(age) if age >= 0 =>
@@ -53,6 +68,9 @@ class SamplePersonParser(override val conf: ParserConf)
   }
 }
 
+/** Companion of [[SamplePersonParser]] which defines
+  * [[com.avira.ds.sparser.ParseError]]s that be reported by the parser.
+  */
 object SamplePersonParser {
 
   sealed abstract class SamplePersonParseError(
@@ -68,7 +86,8 @@ object SamplePersonParser {
   case class NotEnoughColumnsParseError(colsCount: Int)
       extends SamplePersonParseError(Some("Insufficient columns"), Seq(colsCount))
 
+  /** Returns all [[ParseError]]s which could be reported by [[SamplePersonParser]]. */
   def parseErrorClasses: Set[Class[_ <: ParseError]] =
     MacroUtils.getSealedClassChildren[SamplePersonParseError]
-       .asInstanceOf[Set[Class[_ <: ParseError]]]
+      .asInstanceOf[Set[Class[_ <: ParseError]]]
 }

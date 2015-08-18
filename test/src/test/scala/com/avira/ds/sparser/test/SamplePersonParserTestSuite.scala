@@ -6,7 +6,7 @@ import com.avira.ds.sparser.{ParserConf, Parser}
 class SamplePersonParserTestSuite
     extends ParserTestSuite[String, SamplePerson] {
 
-  override lazy val parser: Parser[String, SamplePerson] = new SamplePersonParser(ParserConf())
+  override val parser: Parser[String, SamplePerson] = new SamplePersonParser(ParserConf())
 
   ParserTest("Good",
     "Calin\t28",

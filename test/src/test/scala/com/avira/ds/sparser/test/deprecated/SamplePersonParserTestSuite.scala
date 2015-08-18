@@ -1,9 +1,9 @@
-package com.avira.ds.sparser.deprecated
+package com.avira.ds.sparser.test.deprecated
 
-import com.avira.ds.sparser.samples.{SamplePersonParser, SamplePerson}
+import com.avira.ds.sparser.samples.{SamplePerson, SamplePersonParser}
 import com.avira.ds.sparser.{Parser, ParserConf}
 
-@deprecated
+@deprecated("Use the new com.avira.ds.sparser.test.ParserTestSuite", "0.1.0-SNAPSHOT")
 class SamplePersonParserTestSuite extends ParserTestSuite[String, SamplePerson] {
 
   lazy val parser: Parser[String, SamplePerson] = new SamplePersonParser(ParserConf())

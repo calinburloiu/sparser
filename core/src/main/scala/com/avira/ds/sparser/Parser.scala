@@ -5,12 +5,17 @@ package com.avira.ds.sparser
  * a log line) into a ''value'' (e.g. a structured object) of type `O` by using
  * `parse` method.
  *
- * The resulted value is wrapped into a [[com.avira.ds.sparser.ParseResult]]
- * which allows the value to be absent, errors to be collected and a callback
- * function (with side effects) to be called each time an error occurs. Check
- * [[com.avira.ds.sparser.ParseResult]] documentation for more information.
+ * The resulted value is wrapped into a [[ParseResult]] which allows the value
+ * to be absent, errors to be collected and a callback function (with side
+ * effects) to be called each time an error occurs. Check [[ParseResult]]
+ * documentation for more information.
  *
- * Example usage for a sample parser implementation available in the library:
+ * All [[Parser]] instances contains general configuration object
+ * [[ParserConf]].
+ *
+ * [[Parser]] users generally call `parse` method and need to know how to get
+ * the value and the errors out of [[ParseResult]] objects. Here is an example
+ * usage for a sample parser implementation available in the library:
  *
  * {{{
  * scala> :paste
@@ -40,8 +45,22 @@ package com.avira.ds.sparser
  * res5: Int = 25
  * }}}
  *
- * @tparam I input type
- * @tparam O output value type
+ * 
+ * [[Parser]] developers need to implement protected abstract method `parse`
+ * where they operate on [[ParseResult]] monadic objects by applying a series
+ * of functional transformations. Errors are identified by classes or objects
+ * which implement [[ParseError]] trait. Conventionally, [[Parser]] developers
+ * should create a companion object for their class with method
+ * `parseErrorClasses: Set[Class[_ <: ParseError]]` which returns the set of
+ * all [[ParseError]] classes returnable by the parser. Macro method
+ * `getSealedClassChildren` from `com.avira.ds.MacroUtils` object allows
+ * developers to retrieve all error classes in one line of code provided that
+ * all errors of a parser are extending the same sealed abstract class or
+ * trait.
+ *
+ * @tparam I Input type
+ * @tparam O Output value type
+ * @see [[ParseResult]] and [[ParseError]]
  */
 trait Parser[I, +O] extends Serializable {
 
@@ -51,25 +70,25 @@ trait Parser[I, +O] extends Serializable {
   def errorCallback: ParseError => Unit = conf.errorCallback
 
   /** Transforms a string into a structured object wrapped in a
-    * [[com.avira.ds.sparser.ParseResult]].
+    * [[ParseResult]].
     *
-    * @param input data to parse
-    * @return value extracted from the input
+    * @param input Data to parse
+    * @return Value Extracted from the input
     */
   def parse(input: I): ParseResult[I, O] = parse(createResult(input))
 
   protected def parse(initResult: ParseResult[I, I]): ParseResult[I, O]
 
-  /** Factory method for creating [[com.avira.ds.sparser.ParseResult]]
+  /** Factory method for creating [[ParseResult]]
     * instances.
-    * 
+    *
     * Should be used by `parse` method during initialization to create the
     * initial result object from the input. It makes sure that configuration
-    * parameters from [[com.avira.ds.sparser.ParserConf]] (like the error
+    * parameters from [[ParserConf]] (like the error
     * callback function) are passed to the result.
     *
-    * @param input data that is going to be parsed
-    * @return a result containing the value and input passed as well as the
+    * @param input Data that is going to be parsed
+    * @return A result containing the value and input passed as well as the
     * configuration
     */
   protected def createResult(input: I): ParseResult[I, I] = {
@@ -84,10 +103,22 @@ trait Parser[I, +O] extends Serializable {
 }
 
 /**
+ * General configuration class for [[Parser]]s where you can configure error
+ * callback function and what should be collected in [[ParseResult]] object.
  *
- * @param errorCallback a side effect function to be called each time an error occurs
- * @param shouldCollectInput whether to collect the input into each [[ParseResult]]
+ * @param errorCallback A side effect function to be called each time an error occurs
+ * @param shouldCollectInput Whether to collect the input into each [[ParseResult]]
  */
-case class ParserConf(
-    errorCallback: ParseError => Unit = { e: ParseError => () },
-    shouldCollectInput: Boolean = true) extends Serializable
+class ParserConf(
+    val errorCallback: ParseError => Unit = { e: ParseError => () },
+    val shouldCollectInput: Boolean = true)
+  extends Serializable
+
+object ParserConf {
+  def apply(errorCallback: ParseError => Unit = { e: ParseError => () },
+      shouldCollectInput: Boolean = true): ParserConf =
+    new ParserConf(errorCallback, shouldCollectInput)
+
+  def unapply(parserConf: ParserConf): Option[(ParseError => Unit, Boolean)] =
+    Some((parserConf.errorCallback, parserConf.shouldCollectInput))
+}

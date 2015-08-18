@@ -145,17 +145,17 @@
       <layout>default</layout>
       <url>http://hadoop-mgmt-01.srv.doi1.avira.org:8081/nexus/content/repositories/releases/</url>
     </repository>
-    <repository>
+    <!--<repository>
       <snapshots>
         <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
+        <updatePolicy>daily</updatePolicy>
         <checksumPolicy>warn</checksumPolicy>
       </snapshots>
       <id>bdo-snapshots</id>
       <name>Data Science Maven Snapshots Repository</name>
       <layout>default</layout>
       <url>http://hadoop-mgmt-01.srv.doi1.avira.org:8081/nexus/content/repositories/snapshots/</url>
-    </repository>
+    </repository>-->
   </repositories>
 
   <distributionManagement>

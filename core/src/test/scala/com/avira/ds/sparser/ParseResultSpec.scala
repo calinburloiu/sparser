@@ -1,10 +1,11 @@
 package com.avira.ds.sparser
 
-import org.scalatest.WordSpec
+import org.scalatest.{PrivateMethodTester, WordSpec}
 
 import scala.collection.mutable
 
-class ParseResultSpec  extends WordSpec {
+/** Tests for [[ParseResult]] class and its descendants */
+class ParseResultSpec  extends WordSpec with PrivateMethodTester {
 
   implicit val conf = ParserConf()
 

@@ -1,4 +1,4 @@
-package com.avira.ds.sparser.deprecated
+package com.avira.ds.sparser.test.deprecated
 
 import com.avira.ds.sparser.{ParseError, ParseResult, Parser}
 import org.scalatest.WordSpec
@@ -6,7 +6,7 @@ import org.scalatest.WordSpec
 import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
 
-@deprecated
+@deprecated("Use the new com.avira.ds.sparser.test.ParserTestSuite", "0.1.0-SNAPSHOT")
 abstract class ParserTestSuite[I, O: ru.TypeTag : ClassTag] extends WordSpec {
 
   def parser: Parser[I, O]
@@ -52,7 +52,7 @@ abstract class ParserTestSuite[I, O: ru.TypeTag : ClassTag] extends WordSpec {
   def getTypeTag[T : ru.TypeTag](obj: T): ru.TypeTag[T] = ru.typeTag[T]
 }
 
-@deprecated
+@deprecated("Use the new com.avira.ds.sparser.test.ParserTestSuite", "0.1.0-SNAPSHOT")
 case class ParserTest[I](
     name: String,
     input: I,
@@ -60,18 +60,18 @@ case class ParserTest[I](
     expectedErrors: ExpectedErrors = ExpectedErrors())
 
 
-@deprecated
+@deprecated("Use the new com.avira.ds.sparser.test.ParserTestSuite", "0.1.0-SNAPSHOT")
 sealed abstract class ExpectedValueOption {
   def fields: Seq[(String, Any)]
 }
 
-@deprecated
+@deprecated("Use the new com.avira.ds.sparser.test.ParserTestSuite", "0.1.0-SNAPSHOT")
 case object ExpectedNoValue extends ExpectedValueOption {
   override val fields: Seq[(String, Any)] = Seq()
 }
-@deprecated
+@deprecated("Use the new com.avira.ds.sparser.test.ParserTestSuite", "0.1.0-SNAPSHOT")
 case class ExpectedValue(override val fields: (String, Any)*) extends ExpectedValueOption
 
 
-@deprecated
+@deprecated("Use the new com.avira.ds.sparser.test.ParserTestSuite", "0.1.0-SNAPSHOT")
 case class ExpectedErrors(errorClasses: Class[_ <: ParseError]*)

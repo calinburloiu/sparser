@@ -5,21 +5,34 @@ import com.avira.ds.sparser._
 
 import scala.util.{Failure, Success, Try}
 
+/** Nested object sample returned as output by [[SampleNestedObjectParser]] */
 case class NestedObject(
     a: String,
     b: String,
     c: Ratio)
 
+/**
+  * @see [[NestedObject]]
+  */
 case class Ratio(
     x: Int,
     y: Int)
 
+/** Sample parser implemented to show how to test a
+  * [[com.avira.ds.sparser.Parser]] implementation which outputs a nested
+  * object.
+  *
+  * Check the tests to see how this kind of parsers can be tested.
+  *
+  * @param conf a [[com.avira.ds.sparser.ParserConf]] instance.
+  */
 class SampleNestedObjectParser extends Parser[String, NestedObject] {
   import SampleNestedObjectParser._
 
   override def parse(
       inputResult: ParseResult[String, String]): ParseResult[String, NestedObject] = {
     val columnsResult = inputResult.transform { line: String =>
+      // Split the TSV line.
       val cols = line.split("\t")
       cols match {
         case Array(a, b, c) => TransformSuccess((a, b, c))
@@ -30,6 +43,7 @@ class SampleNestedObjectParser extends Parser[String, NestedObject] {
       }
     }
 
+    // Split the components of the [[Ratio]] object and parse the numbers.
     columnsResult.transform { case (a, b, cRaw) =>
       val ratioSplits = cRaw.split(":")
       ratioSplits match {
@@ -43,6 +57,9 @@ class SampleNestedObjectParser extends Parser[String, NestedObject] {
   }
 }
 
+/** Companion of [[SampleNestedObjectParser]] which defines
+  * [[com.avira.ds.sparser.ParseError]]s that be reported by the parser.
+  */
 object SampleNestedObjectParser {
 
   sealed abstract class SampleNestedObjectParseError(
@@ -59,6 +76,9 @@ object SampleNestedObjectParser {
       extends SampleNestedObjectParseError(
         Some("At least one of the numbers in Ratio is invalid"), Seq(e))
 
+  /** Returns all [[ParseError]]s which could be reported by
+    * [[SampleNestedObjectParser]].
+    */
   def parseErrorClasses: Set[Class[_ <: ParseError]] =
     MacroUtils.getSealedClassChildren[SampleNestedObjectParseError]
         .asInstanceOf[Set[Class[_ <: ParseError]]]
