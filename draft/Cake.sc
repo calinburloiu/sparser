@@ -19,7 +19,7 @@ trait ParserComponent[I, O] {
   }
 }
 
-class StarOutputMapperComponent extends OutputMapperComponent[String] {
+trait StarOutputMapperComponent extends OutputMapperComponent[String] {
   override val outputMapper: OutputMapper = new StarOutputMapper
 
   class StarOutputMapper extends OutputMapper {
@@ -27,7 +27,7 @@ class StarOutputMapperComponent extends OutputMapperComponent[String] {
   }
 }
 
-trait IntParserComponent extends ParserComponent[Int, String] {
+class IntParserComponent extends ParserComponent[Int, String] {
   this: OutputMapperComponent[String] =>
 
   override val parser: Parser = new IntParser
@@ -38,12 +38,9 @@ trait IntParserComponent extends ParserComponent[Int, String] {
 }
 
 object ComponentRegistry
-  extends StarOutputMapperComponent
-  with IntParserComponent {
-  override val parser: Parser = new IntParser
-  override val outputMapper: OutputMapper = new StarOutputMapper
-}
+  extends IntParserComponent
+  with StarOutputMapperComponent
 
-val parser: ComponentRegistry.Parser = ComponentRegistry.parser
+val parser: ParserComponent[Int, String]#Parser = ComponentRegistry.parser
 
 parser.parseAndMap(3)
