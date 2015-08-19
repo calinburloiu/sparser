@@ -9,6 +9,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.util.Try
 
+/** Sample app which shows how to integrate SParser with Spark */
 object SampleApp extends StrictLogging {
 
   def main(args: Array[String]): Unit = {
@@ -38,6 +39,7 @@ object SampleApp extends StrictLogging {
     printErrorsReport(parserAccumulators)
   }
 
+  /** Using ''Parser Generator Deploy Mode'' and `parse` method on an RDD */
   def runWithoutErrors(
       sc: SparkContext,
       inputPath: String)(implicit parserGenerator: () => Parser[String, SamplePerson]): Unit = {
@@ -52,6 +54,8 @@ object SampleApp extends StrictLogging {
     l_persons.foreach(x => logger.info(x.toString))
   }
 
+  /** Using ''Parser Simple Deploy Mode'', `parseWithErrors` method on an RDD
+    * and pattern matching on `ParseResult`s. */
   def runWithGroupedErrors(
       sc: SparkContext,
       inputPath: String)(implicit parser: Parser[String, SamplePerson]): Unit = {
@@ -72,6 +76,8 @@ object SampleApp extends StrictLogging {
     l_groupedErrors.foreach(x => logger.warn(x.toString()))
   }
 
+  /** Using ''Parser Broadcast Deploy Mode'', `parseWithErrors` method on an
+    * RDD and for-comprehension on `ParseResult`s. */
   def runWithExplodedErrors(
       sc: SparkContext,
       inputPath: String)
@@ -102,6 +108,7 @@ object SampleApp extends StrictLogging {
   }
 }
 
+/** Holds command line arguments */
 case class Options(
     inputPath: String,
     shouldCollectInput: Boolean)

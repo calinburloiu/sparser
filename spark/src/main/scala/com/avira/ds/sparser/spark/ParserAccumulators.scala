@@ -21,9 +21,8 @@ import org.apache.spark.{Accumulator, SparkContext}
   *
   * {{{
   * val parserAccumulators = ParserAccumulators(sc, SamplePersonParser.parseErrorClasses)
-  * 
   * val parserConf: ParserConf = ParserConf(
-  *   errorCallback = parserAccumulators.createAccumulatorsParserCallback,
+  *   errorCallback = parserAccumulators.createAccumulatorsParserCallback
   * )
   * implicit val parser: Parser[String, SamplePerson] = new SamplePersonParser(parserConf)
   * }}}
