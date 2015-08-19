@@ -22,9 +22,9 @@ import org.scalatest.WordSpec
   * {{{
   * class SamplePersonParserTestSuite
   *     extends ParserTestSuite[String, SamplePerson] {
-  * 
+  *
   *   override val parser: Parser[String, SamplePerson] = new SamplePersonParser(ParserConf())
-  * 
+  *
   *   ParserTest("Good input",
   *     "John Doe\t33",
   *     ExpectedSuccessResult(

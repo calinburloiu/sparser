@@ -9,6 +9,6 @@ package com.avira.ds.sparser
   * parser based on expected outcomes for particular input values.
   */
 package object test {
-  
+
 }
 

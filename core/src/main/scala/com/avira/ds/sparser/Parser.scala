@@ -45,7 +45,6 @@ package com.avira.ds.sparser
  * res5: Int = 25
  * }}}
  *
- * 
  * [[Parser]] developers need to implement protected abstract method `parse`
  * where they operate on [[ParseResult]] monadic objects by applying a series
  * of functional transformations. Errors are identified by classes or objects

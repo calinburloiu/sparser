@@ -14,5 +14,5 @@ package com.avira.ds
   * has cases for success and failure and can encapsulate an error.
   */
 package object sparser {
-  
+
 }
