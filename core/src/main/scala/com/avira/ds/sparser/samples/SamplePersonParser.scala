@@ -19,7 +19,7 @@ case class SamplePerson(
   * implemented for simple TSV input.
   *
   * Check [[com.avira.ds.sparser.Parser]] for a usage example.
-  * 
+  *
   * @param conf a [[com.avira.ds.sparser.ParserConf]] instance.
   */
 class SamplePersonParser(override val conf: ParserConf)

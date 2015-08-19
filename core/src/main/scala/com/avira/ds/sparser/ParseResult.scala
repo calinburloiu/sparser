@@ -115,7 +115,8 @@ sealed abstract class ParseResult[I, +O](
     * @tparam OO New type of the value
     * @return A new ParserResult
     */
-  private[sparser] def fillValueAndReportError[OO](newValue: OO, error: ParseError): ParseResult[I, OO] = {
+  private[sparser] def fillValueAndReportError[OO](
+      newValue: OO, error: ParseError): ParseResult[I, OO] = {
     conf.errorCallback(error)
     Warning(newValue, errors :+ error, input)
   }

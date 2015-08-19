@@ -130,11 +130,6 @@
     </repository>
 
     <repository>
-      <id>cloudera</id>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
-    </repository>
-
-    <repository>
       <releases>
         <enabled>true</enabled>
         <updatePolicy>daily</updatePolicy>
@@ -145,7 +140,7 @@
       <layout>default</layout>
       <url>http://hadoop-mgmt-01.srv.doi1.avira.org:8081/nexus/content/repositories/releases/</url>
     </repository>
-    <!--<repository>
+    <repository>
       <snapshots>
         <enabled>true</enabled>
         <updatePolicy>daily</updatePolicy>
@@ -155,7 +150,12 @@
       <name>Data Science Maven Snapshots Repository</name>
       <layout>default</layout>
       <url>http://hadoop-mgmt-01.srv.doi1.avira.org:8081/nexus/content/repositories/snapshots/</url>
-    </repository>-->
+    </repository>
+
+    <repository>
+      <id>cloudera</id>
+      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+    </repository>
   </repositories>
 
   <distributionManagement>

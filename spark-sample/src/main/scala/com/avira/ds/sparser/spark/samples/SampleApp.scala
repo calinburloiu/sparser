@@ -41,7 +41,7 @@ object SampleApp extends StrictLogging {
   def runWithoutErrors(
       sc: SparkContext,
       inputPath: String)(implicit parserGenerator: () => Parser[String, SamplePerson]): Unit = {
-    import com.avira.ds.sparser.spark.SparserSpark.ParserGeneratorRDDFunctions
+    import com.avira.ds.sparser.spark.ParserGeneratorRDDFunctions
 
     val input = sc.textFile(inputPath)
     val persons = input.parse
@@ -55,7 +55,7 @@ object SampleApp extends StrictLogging {
   def runWithGroupedErrors(
       sc: SparkContext,
       inputPath: String)(implicit parser: Parser[String, SamplePerson]): Unit = {
-    import com.avira.ds.sparser.spark.SparserSpark.ParserSimpleRDDFunctions
+    import com.avira.ds.sparser.spark.ParserSimpleRDDFunctions
 
     val input = sc.textFile(inputPath)
     val results = input.parseWithErrors
@@ -76,7 +76,7 @@ object SampleApp extends StrictLogging {
       sc: SparkContext,
       inputPath: String)
       (implicit parserBroadcast: Broadcast[Parser[String, SamplePerson]]): Unit = {
-    import com.avira.ds.sparser.spark.SparserSpark.ParserBroadcastRDDFunctions
+    import com.avira.ds.sparser.spark.ParserBroadcastRDDFunctions
 
     val input = sc.textFile(inputPath)
     val results = input.parseWithErrors
