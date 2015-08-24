@@ -75,8 +75,21 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
       expectedResult: ExpectedResult[O]) {
 
     s"""Parsing input "$name"""" should {
-      val ParseResult(actualValueOption, errors, _) = parser.parse(input)
+      val parseResult = parser.parse(input)
+      val ParseResult(actualValueOption, errors, _) = parseResult
       val errorClasses = errors.map(_.getClass).toSet
+
+      // Check if ExpectedResult case classes match their corresponding ParseResult case classes.
+      "lead to the same result type" in {
+        (expectedResult, parseResult) match {
+          case (ExpectedSuccessResult(_), ParseResult.Success(_, _)) => assert(true)
+          case (ExpectedWarningResult(_, _), ParseResult.Warning(_, _, _)) => assert(true)
+          case (ExpectedFailureResult(_), ParseResult.Failure(_, _)) => assert(true)
+          case _ => assert(false,
+            s"expected result type ${expectedResult.getClass.getCanonicalName} does not match " +
+                s"its corresponding actual result type ${parseResult.getClass.getCanonicalName}")
+        }
+      }
 
       // Check field values.
       actualValueOption.foreach { actualValue =>
