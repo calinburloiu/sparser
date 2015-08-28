@@ -46,7 +46,7 @@ sealed abstract class ParseResult[I, +O](
 
   /** Returns result's value if available.
     *
-    * @throws NoSuchElementException if the result does not contains any value
+    * @throws NoSuchElementException if the result does not contain any value
     * @return value if available
     */
   def get: O
