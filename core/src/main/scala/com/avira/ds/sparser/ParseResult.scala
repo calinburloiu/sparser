@@ -52,10 +52,10 @@ sealed abstract class ParseResult[I, +O](
   def get: O
 
   /** Whether the result has a value inside */
-  def hasValue: Boolean = valueOption.isDefined
+  lazy val hasValue: Boolean = valueOption.isDefined
 
   /** Whether the result has at least one error */
-  def hasErrors: Boolean = errors.nonEmpty
+  lazy val hasErrors: Boolean = errors.nonEmpty
 
   /** Returns true if the result contains a value and there are no errors */
   def isSuccess: Boolean
@@ -133,12 +133,12 @@ object ParseResult {
       override val input: Option[I] = None)(implicit conf: ParserConf)
     extends ParseResult(Some(value), Seq(), input)(conf) {
 
-    override def get: O = value
-    override def hasValue: Boolean = true
-    override def hasErrors: Boolean = false
-    override def isSuccess: Boolean = true
-    override def isWarning: Boolean = false
-    override def isFailure: Boolean = false
+    override val get: O = value
+    override lazy val hasValue: Boolean = true
+    override lazy val hasErrors: Boolean = false
+    override val isSuccess: Boolean = true
+    override val isWarning: Boolean = false
+    override val isFailure: Boolean = false
   }
 
   /** [[Parser]] result which contains a (potentially incomplete) value and at least one error */
@@ -148,11 +148,11 @@ object ParseResult {
       override val input: Option[I] = None)(implicit conf: ParserConf)
     extends ParseResult(Some(value), errors, input)(conf) {
 
-    override def get: O = value
-    override def hasValue: Boolean = true
-    override def isSuccess: Boolean = false
-    override def isWarning: Boolean = true
-    override def isFailure: Boolean = false
+    override val get: O = value
+    override lazy val hasValue: Boolean = true
+    override val isSuccess: Boolean = false
+    override val isWarning: Boolean = true
+    override val isFailure: Boolean = false
   }
 
   /** [[Parser]] result which doesn't contain a value and as a consequence
@@ -164,10 +164,10 @@ object ParseResult {
     extends ParseResult[I, Nothing](None, errors, input)(conf) {
 
     override def get: Nothing = throw new NoSuchElementException
-    override def hasValue: Boolean = false
-    override def isSuccess: Boolean = false
-    override def isWarning: Boolean = false
-    override def isFailure: Boolean = true
+    override lazy val hasValue: Boolean = false
+    override lazy val isSuccess: Boolean = false
+    override lazy val isWarning: Boolean = false
+    override lazy val isFailure: Boolean = true
   }
 
   /** Used for pattern matching of generic results which have an optional
