@@ -1,3 +1,5 @@
+import scala.util.parsing.combinator.testing.Ident
+
 // Get type as parent Parser[I, O].
 res1.tpe.baseType(res1.tpe.baseClasses(1))
 
