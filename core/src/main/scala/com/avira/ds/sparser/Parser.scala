@@ -90,7 +90,10 @@ trait Parser[I, +O] extends Serializable {
     * @return A result containing the value and input passed as well as the
     * configuration
     */
-  protected def createResult(input: I): ParseResult[I, I] = {
+  // FIXME
+  // @return A result ... as well as the configuration
+  // I think it does not contain configuration
+    protected def createResult(input: I): ParseResult[I, I] = {
     val optionalInput = if (conf.shouldCollectInput) {
       Some(input)
     } else {

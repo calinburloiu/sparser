@@ -48,10 +48,10 @@ object SampleApp extends StrictLogging {
     val input = sc.textFile(inputPath)
     val persons = input.parse
 
-    val l_persons = persons.collect()
+    val personsArray: Array[SamplePerson] = persons.collect()
 
     logger.info("*** Parsed values without errors:")
-    l_persons.foreach(x => logger.info(x.toString))
+    personsArray.foreach(x => logger.info(x.toString))
   }
 
   /** Using ''Parser Simple Deploy Mode'', `parseWithErrors` method on an RDD

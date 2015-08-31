@@ -24,7 +24,6 @@ case class Ratio(
   *
   * Check the tests to see how this kind of parsers can be tested.
   *
-  * @param conf a [[com.avira.ds.sparser.ParserConf]] instance.
   */
 class SampleNestedObjectParser extends Parser[String, NestedObject] {
   import SampleNestedObjectParser._
