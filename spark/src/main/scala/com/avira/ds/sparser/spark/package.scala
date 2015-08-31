@@ -63,8 +63,7 @@ package object spark {
   implicit class ParserSimpleRDDFunctions[I](rdd: RDD[I]) {
 
     /** $parseDoc */
-    def parse[O: ClassTag](
-        parser: Parser[I, O]): RDD[O] = {
+    def parse[O: ClassTag](parser: Parser[I, O]): RDD[O] = {
       implicit val parserGenerator: () => Parser[I, O] = { () => parser }
       new ParserGeneratorRDDFunctions(rdd).parse
     }
@@ -83,8 +82,7 @@ package object spark {
       * @param parser Parser which maps input elements to output elements
       * @tparam O Parser output value
       */
-    def parseWithErrors[O](
-        implicit parser: Parser[I, O]): RDD[ParseResult[I, O]] = {
+    def parseWithErrors[O](implicit parser: Parser[I, O]): RDD[ParseResult[I, O]] = {
       implicit val parserGenerator: () => Parser[I, O] = { () => parser }
       new ParserGeneratorRDDFunctions(rdd).parseWithErrors
     }
@@ -110,8 +108,7 @@ package object spark {
   implicit class ParserGeneratorRDDFunctions[I](rdd: RDD[I]) {
 
     /** $parseDoc */
-    def parse[O: ClassTag](
-        parserGenerator: () => Parser[I, O]): RDD[O] = {
+    def parse[O: ClassTag](parserGenerator: () => Parser[I, O]): RDD[O] = {
       rdd.mapPartitions { inputs =>
         val parser = parserGenerator()
 
@@ -171,8 +168,7 @@ package object spark {
   implicit class ParserBroadcastRDDFunctions[I](rdd: RDD[I]) {
 
     /** $parseDoc */
-    def parse[O: ClassTag](
-        parserBroadcast: Broadcast[Parser[I, O]]): RDD[O] = {
+    def parse[O: ClassTag](parserBroadcast: Broadcast[Parser[I, O]]): RDD[O] = {
       implicit val parserGenerator: () => Parser[I, O] = { () => parserBroadcast.value }
       new ParserGeneratorRDDFunctions(rdd).parse
     }
