@@ -49,6 +49,7 @@ import org.scalatest.WordSpec
   * @see [[ParserTestSuite#ParserTest]]
   */
 abstract class ParserTestSuite[I, O] extends WordSpec {
+  import ParserTestSuite._
 
   /** Instance of the parser you want to test */
   val parser: Parser[I, O]
@@ -86,8 +87,8 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
           case (ExpectedWarningResult(_, _), ParseResult.Warning(_, _, _)) => assert(true)
           case (ExpectedFailureResult(_), ParseResult.Failure(_, _)) => assert(true)
           case _ => assert(false,
-            s"expected result type ${expectedResult.getClass.getCanonicalName} does not match " +
-                s"its corresponding actual result type ${parseResult.getClass.getCanonicalName}")
+            s"expected ${getResultTypeName(expectedResult)} result, but " +
+                s"${getResultTypeName(parseResult)} was found")
         }
       }
 
@@ -117,6 +118,20 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
         }
       }
     }
+  }
+}
+
+object ParserTestSuite {
+  def getResultTypeName(expectedResult: ExpectedResult[_]): String = expectedResult match {
+    case s: ExpectedSuccessResult[_] => "success"
+    case w: ExpectedWarningResult[_] => "warning"
+    case f: ExpectedFailureResult[_] => "failure"
+  }
+
+  def getResultTypeName(actualResult: ParseResult[_, _]): String = actualResult match {
+    case s: ParseResult.Success[_, _] => "success"
+    case w: ParseResult.Warning[_, _] => "warning"
+    case f: ParseResult.Failure[_] => "failure"
   }
 }
 
@@ -192,3 +207,4 @@ case class ExpectedValue[O](fieldValues: FieldMatch[O]*)
   * @see [[ExpectedResult]]
   */
 case class ExpectedErrors(errorClasses: Class[_ <: ParseError]*)
+
