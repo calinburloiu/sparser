@@ -1,6 +1,6 @@
 package com.avira.ds.sparser.test
 
-import com.avira.ds.sparser.{ParseError, ParseResult, Parser}
+import com.avira.ds.sparser._
 import org.scalatest.WordSpec
 
 /** Extend this class for testing a `com.avira.ds.sparser.Parser` based on
@@ -70,13 +70,24 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
     * expected outcome of the parser based on the input
     * @see [[ExpectedResult]], [[ExpectedValue]], [[ExpectedErrors]]
     */
-  case class ParserTest(
+  case class ParserTest[OO](
       name: String,
       input: I,
-      expectedResult: ExpectedResult[O]) {
+      mapOutput: PartialFunction[O, OO],
+      expectedResult: ExpectedResult[OO]) {
+    import ParserTest._
 
     s"""Parsing input "$name"""" should {
-      val parseResult = parser.parse(input)
+      val parseResult = parser.parse(input).transform { output =>
+        if (mapOutput.isDefinedAt(output)) {
+          TransformSuccess(mapOutput(output))
+        } else {
+          TransformFailure(UndefinedFunctionDomain)
+        }
+      }
+
+      // TODO Treat UndefinedFunctionDomain case.
+
       val ParseResult(actualValueOption, errors, _) = parseResult
       val errorClasses = errors.map(_.getClass).toSet
 
@@ -95,7 +106,7 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
       // Check field values.
       actualValueOption.foreach { actualValue =>
         val fieldValues = expectedResult.expectedValueOption
-          .fold(Seq[FieldMatch[O]]())(_.fieldValues)
+          .fold(Seq[FieldMatch[OO]]())(_.fieldValues)
         for (FieldMatch(fieldName, selectField, expectedFieldValue) <- fieldValues) {
           s"""extract field $fieldName""" in {
             assert(
@@ -117,6 +128,19 @@ abstract class ParserTestSuite[I, O] extends WordSpec {
           assert(errorClasses.contains(expectedErrorClass))
         }
       }
+    }
+  }
+
+  object ParserTest {
+    def apply(
+        name: String,
+        input: I,
+        expectedResult: ExpectedResult[O]): ParserTest[O] =
+      ParserTest(name, input, { case o: O => o }, expectedResult)
+
+    private[ParserTest] case object UndefinedFunctionDomain extends ParseError {
+      override val message: Option[String] = None
+      override val args: Seq[Any] = Seq()
     }
   }
 }
