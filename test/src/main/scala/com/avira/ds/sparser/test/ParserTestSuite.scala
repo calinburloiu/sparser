@@ -101,11 +101,6 @@ abstract class ParserTestSuite[I, O : ClassTag] extends WordSpec {
       val ParseResult(actualValueOption, errors, _) = mappedParseResult
       val errorClasses = errors.map(_.getClass).toSet
 
-//      if (mappedParseResult.errors.contains(UndefinedFunctionDomain)) {
-//        fail("mapOutput partial function is not defined on the value extracted by parsing input " +
-//            s""""$name", ${parseResult.valueOption.get}.""")
-//      }
-
       "return a value for which mapOutput partial function is defined" in {
         if (mappedParseResult.errors.contains(UndefinedFunctionDomain)) {
           assert(false,
