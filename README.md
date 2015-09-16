@@ -24,7 +24,7 @@ return type of this function is an instance of
 which has cases for success, warning and failure results and can encapsulate an
 error.
 
-While using SParser you might be a _parser developer_, which creates new parser
+While using SParser you might be a _parser developer_, which creates new parsers
 for new data types, or a _parser user_, who uses existing parsers in order to
 make sense of data.
 
@@ -84,7 +84,7 @@ Two kind of tools are currently provided:
 `parse` or `parseWithErrors` method on an `RDD`.
 * Real-time incrementation of Spark accumulators for errors reported while
 parsing by using parser's error callback function. Check
-[[com.avira.ds.sparser.spark.ParserAccumulators]].
+[ParserAccumulators](/spark/src/main/scala/com/avira/ds/sparser/spark/ParserAccumulators).
 
 Importing an implicit definition allows parsing by calling one of the methods
 directly on RDDs:
@@ -99,12 +99,15 @@ Basically, you can use SParser with Spark as simple as in this example:
 
 ```scala
 import com.avira.ds.sparser._
+// Import for implicits
+import com.avira.ds.sparser.spark.ParserSimpleRDDFunctions
 import com.avira.ds.sparser.samples.{SamplePerson, SamplePersonParser}
 
 val input = sc.textFile("/path/to/input")
 
 implicit val parser: Parser[String, SamplePerson] =
     new SamplePersonParser(ParserConf())
+// Call parse directly on RDD due to the implicits imported.
 val persons = input.parse
 ```
 
