@@ -12,7 +12,7 @@ import scala.reflect.ClassTag
   *  calling `parse` or `parseWithErrors` method on an `RDD`.
   *  - Real-time incrementation of Spark accumulators for errors reported while
   *  parsing by using parser's error callback function. Check
-  *  [[ParserAccumulators]].
+  *  [[com.avira.ds.sparser.spark.ParserAccumulators]].
   *
   * Spark is a distributed system and your parser needs to run on workers.
   * There are multiple ways to deploy parser instances to workers. For each one
