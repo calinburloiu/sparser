@@ -9,18 +9,18 @@ Parsing with Scala
 ------------------
 
 Create your own parsers for your data by extending
-[`Parser`](/core/src/main/scala/com/avira/ds/sparser/Parser) trait, which will
+[`Parser`](/core/src/main/scala/com/avira/ds/sparser/Parser.scala) trait, which will
 allow you to transform the input into a desired value, wrapped into a
-[`ParseResult`](/core/src/main/scala/com/avira/ds/sparser/ParseResult) object,
+[`ParseResult`](/core/src/main/scala/com/avira/ds/sparser/ParseResult.scala) object,
 which collects errors as
-[`ParseError`](/core/src/main/scala/com/avira/ds/sparser/ParseError) child
+[`ParseError`](/core/src/main/scala/com/avira/ds/sparser/ParseError.scala) child
 class instances.
 
 The parsing process can be divided into one or more monadic operations on
-[`ParseResult`](/core/src/main/scala/com/avira/ds/sparser/ParseResult) objects
+[`ParseResult`](/core/src/main/scala/com/avira/ds/sparser/ParseResult.scala) objects
 by using `transform` method which accepts a `flatMap`-like lambda function. The
 return type of this function is an instance of
-[`TransformResult`](/core/src/main/scala/com/avira/ds/sparser/TransformResult)
+[`TransformResult`](/core/src/main/scala/com/avira/ds/sparser/TransformResult.scala)
 which has cases for success, warning and failure results and can encapsulate an
 error.
 
@@ -30,7 +30,7 @@ make sense of data.
 
 _Parser users_ generally call `parse` method and need to know how to get the
 value and the errors out of
-[`ParseResult`](/core/src/main/scala/com/avira/ds/sparser/ParseResult) objects.
+[`ParseResult`](/core/src/main/scala/com/avira/ds/sparser/ParseResult.scala) objects.
 Here is an example usage for a sample parser implementation available in the
 library:
 
@@ -64,10 +64,10 @@ res5: Int = 25
 
 _Parser developers_ need to implement protected abstract method `parse` where
 they operate on
-[`ParseResult`](/core/src/main/scala/com/avira/ds/sparser/ParseResult) monadic
+[`ParseResult`](/core/src/main/scala/com/avira/ds/sparser/ParseResult.scala) monadic
 objects by applying a series of functional transformations. Errors are
 identified by classes or objects which implement
-[`ParseError`](/core/src/main/scala/com/avira/ds/sparser/ParseError) trait.
+[`ParseError`](/core/src/main/scala/com/avira/ds/sparser/ParseError.scala) trait.
 [Check some example
 parsers](/core/src/main/scala/com/avira/ds/sparser/samples/).
 
