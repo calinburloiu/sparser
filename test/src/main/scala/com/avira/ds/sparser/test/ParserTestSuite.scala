@@ -72,7 +72,9 @@ abstract class ParserTestSuite[I, O : ClassTag] extends WordSpec {
     * invariant with respect to parser's (`Parser[I, O]`) output value (`O`) you
     * can define a partial function such as
     * `{ case o: MoreSpecificClass => o }` to do the cast, which will expose
-    * `MoreSpecificClass` members in `FieldMatch#selectField`function.
+    * `MoreSpecificClass` members in `FieldMatch#selectField`function. You can
+    * find an example of this use case in
+    * "test/src/test/scala/com/avira/ds/sparser/test/HierarchicalOutputParserTestSuite.scala".
     *
     * @param name Short and descriptive name of the test case which will be
     * printed by ScalaTest when running the test suite
