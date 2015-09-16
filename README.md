@@ -84,7 +84,7 @@ Two kind of tools are currently provided:
 `parse` or `parseWithErrors` method on an `RDD`.
 * Real-time incrementation of Spark accumulators for errors reported while
 parsing by using parser's error callback function. Check
-[ParserAccumulators](/spark/src/main/scala/com/avira/ds/sparser/spark/ParserAccumulators).
+[ParserAccumulators](/spark/src/main/scala/com/avira/ds/sparser/spark/ParserAccumulators.scala).
 
 Importing an implicit definition allows parsing by calling one of the methods
 directly on RDDs:
