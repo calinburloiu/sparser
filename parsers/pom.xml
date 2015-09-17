@@ -16,8 +16,9 @@
 
   <properties>
     <main.basedir>${project.parent.basedir}</main.basedir>
-
-    <play-json.version>2.4.2</play-json.version>
+    
+    <!-- be careful, versions higher than 2.4.0-M2 depend on Java 8 and lead to problems in runtime! -->
+    <play-json.version>2.4.0-M2</play-json.version>
   </properties>
 
   <dependencies>
