@@ -12,6 +12,7 @@
     <module>macros</module>
     <module>core</module>
     <module>test</module>
+    <module>parsers</module>
     <module>spark</module>
     <module>spark-sample</module>
   </modules>
