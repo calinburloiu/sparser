@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>sparser-parsers_2.10</artifactId>
+  <version>0.2.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <parent>
+    <groupId>com.avira.ds</groupId>
+    <artifactId>sparser-parent_2.10</artifactId>
+    <version>0.2.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <properties>
+    <main.basedir>${project.parent.basedir}</main.basedir>
+    
+    <!-- be careful, versions higher than 2.4.0-M2 depend on Java 8 and lead to problems in runtime! -->
+    <play-json.version>2.4.0-M2</play-json.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.avira.ds</groupId>
+      <artifactId>sparser-core_2.10</artifactId>
+      <version>0.2.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.avira.ds</groupId>
+      <artifactId>sparser-test_2.10</artifactId>
+      <version>0.2.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.typesafe.play</groupId>
+      <artifactId>play-json_${scala.base.version}</artifactId>
+      <version>${play-json.version}</version>
+    </dependency>
+  </dependencies>
+</project>
