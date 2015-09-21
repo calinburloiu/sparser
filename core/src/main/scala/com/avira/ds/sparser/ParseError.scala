@@ -34,7 +34,7 @@ trait ParseError extends Serializable {
   val args: Seq[Any]
 
   /** Returns an unique name for the parser (FQN of class). */
-  def name: String = this.getClass.getCanonicalName
+  def name: String = this.getClass.getName
 
   def canEqual(other: Any): Boolean = other match {
     case _: ParseError => true
@@ -56,6 +56,6 @@ trait ParseError extends Serializable {
   }
 
   override def toString: String = {
-    s"""{"name": "$name", "message": "${message.getOrElse("")}", "args", ${args.mkString("[\"", "\", \"", "\"]")}}""" // scalastyle:ignore
+    s"""{"name": "$name", "message": "${message.getOrElse("")}", "args": ${args.mkString("[\"", "\", \"", "\"]")}}""" // scalastyle:ignore
   }
 }
